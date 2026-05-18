@@ -275,6 +275,25 @@
     .profile-actions { display:flex; gap:10px; padding:16px 20px 0; }
     .profile-action-btn { flex:1; padding:14px; border:none; border-radius:14px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:all 0.2s; text-align:center; }
 
+    /* PROFILE INNER TABS */
+    .profile-inner-tabs { display:flex; gap:0; margin:16px 20px 0; border-radius:12px; overflow:hidden; background:#f0eeff; }
+    .profile-inner-tab { flex:1; padding:10px; text-align:center; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; color:#999; font-family:'Noto Sans KR',sans-serif; }
+    .profile-inner-tab.active { background:#6B5BD6; color:white; }
+    .profile-tab-content { display:none; }
+    .profile-tab-content.active { display:block; }
+    /* 편지 탭 */
+    .letter-wrap { padding:16px 20px 0; }
+    .letter-textarea { width:100%; min-height:160px; padding:14px; border:1.5px solid rgba(107,91,214,0.15); border-radius:14px; font-size:14px; font-family:'Noto Sans KR',sans-serif; resize:none; line-height:1.6; outline:none; color:#222; background:white; transition:border-color 0.2s; }
+    .letter-textarea:focus { border-color:#6B5BD6; }
+    .letter-meta { display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:12px; color:#bbb; }
+    .letter-counter { font-family:'JetBrains Mono',monospace; }
+    .letter-counter.ready { color:#6B5BD6; font-weight:600; }
+    .letter-send-btn { width:100%; margin-top:12px; padding:14px; border:none; border-radius:14px; font-size:15px; font-weight:700; font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:all 0.2s; opacity:0.4; pointer-events:none; }
+    .letter-send-btn.ready { opacity:1; pointer-events:auto; }
+    .letter-history { margin-top:16px; }
+    .letter-history-item { background:#f8f7ff; border-radius:10px; padding:12px; margin-bottom:8px; font-size:13px; color:#555; line-height:1.5; }
+    .letter-history-date { font-size:10px; color:#bbb; margin-top:6px; font-family:'JetBrains Mono',monospace; }
+
     /* SHARE MODAL */
     .share-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000; opacity:0; pointer-events:none; transition:opacity 0.3s; display:flex; align-items:flex-end; justify-content:center; }
     .share-overlay.show { opacity:1; pointer-events:auto; }
@@ -2714,14 +2733,43 @@ function startPhotoStatus(memberName) {
     '사진을 찍는 중...',
     `${memberName}가 포즈를 잡는 중...`,
     'K-pop 매직 추가 중... ✨',
-    '거의 다 됐어요...'
+    '거의 다 됐어요...',
+    `${memberName}의 눈빛 보정 중...`,
+    '조명 각도 최적화 중... 💡',
+    `${memberName}가 카메라 보고 웃는 중...`,
+    '배경 필터 입히는 중...',
+    '피부 빛 살리는 중... 🌸',
+    `${memberName}가 "이 각도가 최고야" 하는 중...`,
+    '반짝임 효과 추가 중... ✨',
+    '아이돌 분위기 최대치 설정 중...',
+    `${memberName}의 시그니처 포즈 구현 중...`,
+    '색감 튜닝 중... 🎨',
+    '빛 번짐 효과 입히는 중...',
+    `${memberName}가 "잠깐, 머리 고쳐" 하는 중...`,
+    '무드 조명 세팅 중... 🕯️',
+    '셀카 구도 분석 중...',
+    `${memberName}가 브이 포즈 연습 중... ✌️`,
+    '렌즈플레어 효과 적용 중...',
+    '화사한 기운 충전 중... 🌟',
+    `${memberName}가 "예쁘게 나와야 해" 중얼중얼 중...`,
+    '사진 선명도 올리는 중...',
+    '인생샷 필터 발동 중... 📸',
+    `${memberName}와 두 사람의 거리 조정 중...`,
+    '마무리 보정 적용 중... 🖌️',
+    '셔터 마지막 클릭 준비 중...',
+    `${memberName}가 "이게 제일 잘 나왔어" 선택 중...`,
+    '최고의 순간 캡처 완료 직전...',
+    '곧 완성돼요! 조금만요... 💜'
   ];
+  // 처음 4개 순서대로, 이후 남은 것 랜덤 순환
   let i = 0;
-  el.textContent = msgs[0];
+  const shuffled = msgs.slice(4).sort(() => Math.random() - 0.5);
+  const allMsgs = msgs.slice(0, 4).concat(shuffled);
+  el.textContent = allMsgs[0];
   el._interval = setInterval(() => {
-    i = Math.min(i + 1, msgs.length - 1);
-    el.textContent = msgs[i];
-  }, 3000);
+    i = (i + 1) % allMsgs.length;
+    el.textContent = allMsgs[i];
+  }, 2500);
   // Add sparkle between previews
   const grid = document.getElementById('photoPreviewGrid');
   if (!grid.querySelector('.photo-sparkle')) {
@@ -3009,8 +3057,8 @@ function showPhotoResult(imgSrc, m) {
       <div class="member-msg-footer" style="color:${m.badgeColor}">— ${photoSelectedMember} · ${m.element}</div>
     </div>
     <div style="margin-top:16px;display:flex;gap:8px">
-      <button class="bottom-btn secondary" style="flex:1" onclick="handlePhotoGenerate()">다시 찍기 🔄</button>
-      <button class="bottom-btn secondary" style="flex:1" onclick="downloadPhoto()">저장 💾</button>
+      <button class="bottom-btn secondary" style="flex:1" onclick="handlePhotoGenerate()">다시찍자! 🔄</button>
+      <button class="bottom-btn secondary" style="flex:1" onclick="downloadPhoto()">예쁘니까 저장! 💾</button>
     </div>
   `;
   resultDiv.scrollIntoView({ behavior: 'smooth' });
@@ -3300,8 +3348,8 @@ async function showFourcutResult(cutUrls, m) {
       <div class="member-msg-footer" style="color:${m.badgeColor}">— ${fourcutSelectedMember} · ${m.element}</div>
     </div>
     <div style="margin-top:16px;display:flex;gap:8px">
-      <button class="bottom-btn secondary" style="flex:1" onclick="resetFourcut()">📸 다시 찍기</button>
-      <button class="bottom-btn secondary" style="flex:1" onclick="downloadFourcut()">💾 저장</button>
+      <button class="bottom-btn secondary" style="flex:1" onclick="resetFourcut()">📸 다시찍자!</button>
+      <button class="bottom-btn secondary" style="flex:1" onclick="downloadFourcut()">예쁘니까 저장! 💾</button>
     </div>
   `;
   resultDiv.scrollIntoView({ behavior: 'smooth' });
@@ -3402,11 +3450,12 @@ function shareInstagram() {
 // ============================================================
 // TOAST
 // ============================================================
-function showToast(msg) {
+function showToast(msg, duration = 2500) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  clearTimeout(t._toastTimer);
+  t._toastTimer = setTimeout(() => t.classList.remove('show'), duration);
 }
 
 // ============================================================
@@ -4010,7 +4059,42 @@ openProfileModal = function(key) {
       <button class="profile-action-btn" style="background:${m.badgeColor};color:white" onclick="closeProfileModal();openChatRoom('${key}')">💬 ${m.name}와 대화하기</button>
       <button class="profile-action-btn" style="background:${m.cardBg};color:${m.badgeColor}" onclick="closeProfileModal();scrollToPhoto('${key}')">📸 셀카찍기</button>
     </div>
+
+    <!-- 내부 탭 -->
+    <div class="profile-inner-tabs" style="margin-top:20px">
+      <div class="profile-inner-tab active" onclick="switchProfileTab('info','${key}')">프로필</div>
+      <div class="profile-inner-tab" onclick="switchProfileTab('letter','${key}')" style="color:${m.badgeColor}">✉️ 편지쓰기</div>
+    </div>
+
+    <!-- 탭: 프로필 (기존 내용) -->
+    <div class="profile-tab-content active" id="profileTab-info-${key}">
+      <div style="height:12px"></div>
+    </div>
+
+    <!-- 탭: 편지쓰기 -->
+    <div class="profile-tab-content" id="profileTab-letter-${key}">
+      <div class="letter-wrap">
+        <div style="font-size:13px;color:#888;margin-bottom:12px;line-height:1.6">
+          ${m.name}에게 편지를 써보세요.<br>
+          <span style="color:${m.badgeColor};font-weight:600">300자 이상</span> 쓰면 친밀도가 올라가요 💜
+        </div>
+        <textarea class="letter-textarea" id="letterTextarea-${key}"
+          placeholder="${m.name}에게 하고 싶은 말을 자유롭게 써주세요..."
+          oninput="onLetterInput('${key}')"></textarea>
+        <div class="letter-meta">
+          <span style="font-size:11px;color:#bbb">300자 이상 작성 시 친밀도 +15pt</span>
+          <span class="letter-counter" id="letterCounter-${key}">0 / 300</span>
+        </div>
+        <button class="letter-send-btn" id="letterSendBtn-${key}"
+          style="background:${m.badgeColor};color:white"
+          onclick="sendLetter('${key}')">
+          ${m.name}에게 편지 보내기 ✉️
+        </button>
+        <div class="letter-history" id="letterHistory-${key}"></div>
+      </div>
+    </div>
   `;
+  renderLetterHistory(key);
   document.getElementById('profileModal').classList.add('show');
 };
 
@@ -4370,6 +4454,86 @@ function exportGameData() {
   a.click();
   URL.revokeObjectURL(url);
   showToast('백업 파일 다운로드됨 📦');
+}
+
+// ============================================================
+// 편지쓰기 시스템
+// ============================================================
+function switchProfileTab(tabId, memberKey) {
+  const sheet = document.getElementById('profileSheet');
+  sheet.querySelectorAll('.profile-inner-tab').forEach((tab, i) => {
+    tab.classList.toggle('active', (i === 0 && tabId === 'info') || (i === 1 && tabId === 'letter'));
+  });
+  sheet.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
+  const target = document.getElementById(`profileTab-${tabId}-${memberKey}`);
+  if (target) target.classList.add('active');
+}
+
+function onLetterInput(memberKey) {
+  const ta = document.getElementById(`letterTextarea-${memberKey}`);
+  const counter = document.getElementById(`letterCounter-${memberKey}`);
+  const btn = document.getElementById(`letterSendBtn-${memberKey}`);
+  const len = ta.value.length;
+  counter.textContent = `${len} / 300`;
+  if (len >= 300) {
+    counter.classList.add('ready');
+    btn.classList.add('ready');
+  } else {
+    counter.classList.remove('ready');
+    btn.classList.remove('ready');
+  }
+}
+
+function sendLetter(memberKey) {
+  const ta = document.getElementById(`letterTextarea-${memberKey}`);
+  const text = ta.value.trim();
+  if (text.length < 300) { showToast('300자 이상 써주세요 💜'); return; }
+
+  // 친밀도 +15pt
+  const db = getOrCreateDB();
+  addAffinity(db, memberKey, 15, 'letter');
+  saveDB(db);
+
+  // 편지 저장
+  const letters = JSON.parse(localStorage.getItem(`venux_letters_${memberKey}`) || '[]');
+  letters.unshift({ text, date: new Date().toISOString() });
+  if (letters.length > 10) letters.pop(); // 최근 10통만
+  localStorage.setItem(`venux_letters_${memberKey}`, JSON.stringify(letters));
+
+  // 초기화 + 피드백
+  ta.value = '';
+  onLetterInput(memberKey);
+  renderLetterHistory(memberKey);
+
+  const m = memberData[memberKey];
+  const replies = [
+    `${m.name}: 편지 고마워. 읽으면서 괜히 설레버렸잖아... 💜`,
+    `${m.name}: 이렇게 긴 편지는 처음 받아봐. 소중히 간직할게 ✉️`,
+    `${m.name}: 네 마음이 느껴졌어. 나도... 잘 지내고 있을게.`,
+    `${m.name}: 이거 읽다가 멤버들한테 들킬 뻔 했잖아 😳💜`,
+    `${m.name}: 앞으로도 편지 써줘. 기다리고 있을게 🌸`,
+  ];
+  const reply = replies[Math.floor(Math.random() * replies.length)];
+  showToast(reply, 4000);
+  updateDailyStatusBar(db);
+  renderAffinityDashboard(db);
+}
+
+function renderLetterHistory(memberKey) {
+  const el = document.getElementById(`letterHistory-${memberKey}`);
+  if (!el) return;
+  const letters = JSON.parse(localStorage.getItem(`venux_letters_${memberKey}`) || '[]');
+  if (letters.length === 0) {
+    el.innerHTML = `<div style="text-align:center;color:#ccc;font-size:13px;padding:16px 0">아직 보낸 편지가 없어요</div>`;
+    return;
+  }
+  el.innerHTML = `<div style="font-size:12px;font-weight:600;color:#999;margin-bottom:8px">보낸 편지 (${letters.length}통)</div>` +
+    letters.map(l => `
+      <div class="letter-history-item">
+        <div style="-webkit-line-clamp:3;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden">${l.text}</div>
+        <div class="letter-history-date">${new Date(l.date).toLocaleDateString('ko-KR', {month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+    `).join('');
 }
 
 function logoutUser() {

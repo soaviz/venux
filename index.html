@@ -258,6 +258,26 @@
     .profile-sheet { background:white; border-radius:24px 24px 0 0; padding:0 0 40px; width:100%; max-width:480px; height:85vh; overflow-y:auto; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.32,0.72,0,1); position:relative; }
     .profile-close-btn { position:sticky; top:12px; float:right; margin:-4px 14px 0 0; width:30px; height:30px; border-radius:50%; background:rgba(0,0,0,0.07); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; z-index:20; transition:background 0.15s; }
     .profile-close-btn:active { background:rgba(0,0,0,0.14); }
+    /* 인스타그램 스타일 헤더 */
+    .ig-header { padding:0 16px 14px; }
+    .ig-top-row { display:flex; align-items:center; gap:24px; margin-bottom:14px; }
+    .ig-photo-ring { width:90px; height:90px; border-radius:50%; padding:3px; background:conic-gradient(from 0deg, var(--ig-color,#6B5BD6) 0%, color-mix(in srgb, var(--ig-color,#6B5BD6) 60%, #fff) 100%); flex-shrink:0; }
+    .ig-photo-inner { width:100%; height:100%; border-radius:50%; overflow:hidden; border:2.5px solid white; }
+    .ig-photo-inner img { width:100%; height:100%; object-fit:cover; }
+    .ig-stats { display:flex; flex:1; justify-content:space-around; align-items:center; }
+    .ig-stat { text-align:center; cursor:default; }
+    .ig-stat-num { font-size:17px; font-weight:700; color:#0A0A0A; font-family:'Fraunces',serif; line-height:1; }
+    .ig-stat-label { font-size:10.5px; color:#999; margin-top:3px; font-family:'Noto Sans KR',sans-serif; }
+    .ig-bio { margin-bottom:12px; padding:0 2px; }
+    .ig-bio-name { font-family:'Fraunces',serif; font-size:18px; font-weight:600; color:#0A0A0A; line-height:1.2; }
+    .ig-bio-code { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; margin-top:4px; }
+    .ig-bio-role { font-size:12px; color:#999; margin-top:4px; line-height:1.5; }
+    .ig-bio-sig { font-size:12px; font-style:italic; margin-top:6px; line-height:1.5; opacity:0.75; }
+    .ig-actions { display:flex; gap:8px; }
+    .ig-action-btn { flex:1; padding:8px 0; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; text-align:center; }
+    .ig-action-btn.primary { background:var(--ig-color,#6B5BD6); border:none; color:white; }
+    .ig-action-btn.secondary { background:white; border:1.5px solid #e0e0e0; color:#222; }
+    .ig-action-btn:active { opacity:0.75; transform:scale(0.97); }
     .profile-overlay.show .profile-sheet { transform:translateY(0); }
     .profile-band { height:6px; border-radius:24px 24px 0 0; }
     .profile-handle { width:40px; height:4px; background:#ddd; border-radius:2px; margin:12px auto 20px; }
@@ -4218,21 +4238,43 @@ openProfileModal = function(key) {
         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     </button>
-    <!-- 콤팩트 헤더 -->
-    <div style="display:flex;align-items:center;gap:14px;padding:0 20px 16px">
-      <div class="profile-portrait" style="width:64px;height:64px;flex-shrink:0;--profile-glow:${m.glow}">
-        <img src="${m.photo}" alt="${m.name}">
+    <!-- 인스타그램 스타일 헤더 -->
+    <div class="ig-header" style="--ig-color:${m.badgeColor}">
+      <div class="ig-top-row">
+        <div class="ig-photo-ring" style="--ig-color:${m.badgeColor}">
+          <div class="ig-photo-inner">
+            <img src="${m.photo}" alt="${m.name}">
+          </div>
+        </div>
+        <div class="ig-stats">
+          <div class="ig-stat">
+            <div class="ig-stat-num">6</div>
+            <div class="ig-stat-label">게시물</div>
+          </div>
+          <div class="ig-stat">
+            <div class="ig-stat-num" style="color:${m.badgeColor}">LV.${info.level}</div>
+            <div class="ig-stat-label">친밀도</div>
+          </div>
+          <div class="ig-stat">
+            <div class="ig-stat-num">${rel.conversation_count}</div>
+            <div class="ig-stat-label">대화</div>
+          </div>
+        </div>
       </div>
-      <div>
-        <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:500;color:#0A0A0A">${m.name}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${m.badgeColor};font-weight:500">${key}</div>
-        <div style="font-size:12px;color:#888;margin-top:2px">${p.age} · ${p.role}</div>
-        <div style="font-size:11px;color:#bbb;margin-top:1px">${p.element}</div>
+      <div class="ig-bio">
+        <div class="ig-bio-name">${m.name}</div>
+        <div class="ig-bio-code" style="color:${m.badgeColor}">${key} · ${p.element}</div>
+        <div class="ig-bio-role">${p.role} · ${p.age}</div>
+        <div class="ig-bio-sig" style="color:${m.badgeColor}">"${p.signature}"</div>
+      </div>
+      <div class="ig-actions">
+        <button class="ig-action-btn primary" onclick="closeProfileModal();openChatRoom('${key}')">대화하기</button>
+        <button class="ig-action-btn secondary" onclick="switchProfileTab('letter','${key}')">메일보내기</button>
       </div>
     </div>
     <!-- 탭 바 — compact header 바로 아래 -->
     <div class="profile-inner-tabs" style="--ptab-color:${m.badgeColor}">
-      <div class="profile-inner-tab active" onclick="switchProfileTab('info','${key}')">👤 프로필</div>
+      <div class="profile-inner-tab active" onclick="switchProfileTab('info','${key}')">프로필</div>
       <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('photo','${key}')">인쓰피드보기</div>
       <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('chat','${key}')">대화하기</div>
       <div class="profile-inner-tab" onclick="switchProfileTab('letter','${key}')">메일보내기</div>
@@ -5074,7 +5116,7 @@ const LETTER_TEMPLATES = {
 // ============================================================
 function switchProfileTab(tabId, memberKey) {
   const sheet = document.getElementById('profileSheet');
-  const tabOrder = ['info','letter','chat','photo'];
+  const tabOrder = ['info','photo','chat','letter'];
   sheet.querySelectorAll('.profile-inner-tab').forEach((tab, i) => {
     tab.classList.toggle('active', tabOrder[i] === tabId);
   });

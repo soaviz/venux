@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html, body { width:100%; height:100%; overflow:hidden; font-family:'Noto Sans KR','Inter',sans-serif; background:#F5F3FF; color:#0A0A0A; -webkit-font-smoothing:antialiased; }
@@ -279,7 +280,7 @@
 
     /* PROFILE INNER TABS */
     .profile-inner-tabs { display:flex; gap:0; margin:0; border-bottom:1px solid rgba(0,0,0,0.07); background:white; position:sticky; top:0; z-index:10; }
-    .profile-inner-tab { flex:0 0 25%; width:25%; padding:11px 4px 10px; text-align:center; font-size:11.5px; font-weight:600; cursor:pointer; transition:color 0.15s, border-color 0.15s; color:#bbb; font-family:'Noto Sans KR',sans-serif; border-bottom:2.5px solid transparent; white-space:nowrap; letter-spacing:-0.2px; }
+    .profile-inner-tab { flex:0 0 25%; width:25%; padding:11px 2px 10px; text-align:center; font-size:10.5px; font-weight:600; cursor:pointer; transition:color 0.15s, border-color 0.15s; color:#bbb; font-family:'Noto Sans KR',sans-serif; border-bottom:2.5px solid transparent; white-space:nowrap; letter-spacing:-0.4px; }
     .profile-inner-tab.active { color:#6B5BD6; border-bottom-color:#6B5BD6; }
     .profile-inner-tab.tab-chat.active { color:var(--ptab-color,#6B5BD6); border-bottom-color:var(--ptab-color,#6B5BD6); }
     .profile-tab-content { display:none; }
@@ -315,6 +316,11 @@
     .post-comment-input-wrap { display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid #f0f0f0;background:white;position:sticky;bottom:0; }
     .post-comment-input { flex:1;border:none;outline:none;font-size:14px;font-family:'Noto Sans KR',sans-serif;color:#333;background:transparent; }
     .post-comment-send { background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:#6B5BD6;padding:4px 0;flex-shrink:0; }
+    .post-comment-reply { margin:6px 0 2px 28px;padding:7px 10px;background:#f9f6ff;border-radius:10px;font-size:12px;line-height:1.55; }
+    .post-comment-reply strong { font-weight:700;margin-right:5px; }
+    .post-comment-reply span { color:#444; }
+    .post-comment-reply-time { font-size:10px;color:#bbb;margin-left:5px; }
+    .post-comment-replying { font-size:11px;color:#b0b0b0;margin:4px 0 2px 28px;font-style:italic; }
     .post-emoji-btn { background:none;border:none;cursor:pointer;font-size:18px;padding:0 4px;flex-shrink:0;line-height:1; }
     .post-emoji-picker { position:absolute;bottom:56px;left:0;right:0;background:white;border-top:1px solid #f0f0f0;padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;z-index:10; }
     .post-emoji-picker.hidden { display:none; }
@@ -3167,13 +3173,106 @@ function showPhotoResult(imgSrc, m) {
   resultDiv.scrollIntoView({ behavior: 'smooth' });
 }
 
-function downloadPhoto() {
+// ============================================================
+// QR WATERMARK
+// ============================================================
+const VENUX_QR_URL = 'https://soaviz.github.io/LLM_ChatBot';
+let _qrCanvas = null;
+
+function initQRCanvas() {
+  try {
+    if (typeof QRCode === 'undefined') return;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:100px;height:100px';
+    document.body.appendChild(wrap);
+    new QRCode(wrap, { text: VENUX_QR_URL, width:100, height:100,
+      colorDark:'#1a1a1a', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    setTimeout(() => {
+      const c = wrap.querySelector('canvas');
+      const im = wrap.querySelector('img');
+      if (c) {
+        _qrCanvas = c;
+      } else if (im) {
+        const tmp = document.createElement('canvas');
+        tmp.width = 100; tmp.height = 100;
+        const ctx = tmp.getContext('2d');
+        im.onload = () => { ctx.drawImage(im, 0, 0, 100, 100); _qrCanvas = tmp; };
+        if (im.complete) { ctx.drawImage(im, 0, 0, 100, 100); _qrCanvas = tmp; }
+      }
+      document.body.removeChild(wrap);
+    }, 300);
+  } catch(e) { console.warn('QR init failed', e); }
+}
+
+function addQRWatermark(srcDataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const W = img.width;
+      const BAR = Math.round(W * 0.13);   // 하단 바 높이
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = img.height + BAR;
+      const ctx = canvas.getContext('2d');
+
+      // 원본 이미지
+      ctx.drawImage(img, 0, 0);
+
+      // 하단 바 — 그라데이션 다크
+      const grad = ctx.createLinearGradient(0, img.height, 0, img.height + BAR);
+      grad.addColorStop(0, '#0d0d0d');
+      grad.addColorStop(1, '#1a1a1a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, img.height, W, BAR);
+
+      // 로고 텍스트
+      const baseY = img.height + BAR * 0.42;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `700 ${Math.round(W * 0.048)}px "JetBrains Mono", monospace`;
+      ctx.textAlign = 'left';
+      ctx.fillText('VenuX', Math.round(W * 0.05), baseY);
+      ctx.font = `400 ${Math.round(W * 0.028)}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillText('venux.app', Math.round(W * 0.05), baseY + BAR * 0.34);
+
+      // QR 코드
+      const qrSize = Math.round(BAR * 0.82);
+      const qrX = W - qrSize - Math.round(W * 0.04);
+      const qrY = img.height + Math.round((BAR - qrSize) / 2);
+      if (_qrCanvas) {
+        // 화이트 패딩
+        ctx.fillStyle = '#ffffff';
+        ctx.roundRect
+          ? ctx.roundRect(qrX - 4, qrY - 4, qrSize + 8, qrSize + 8, 4)
+          : ctx.rect(qrX - 4, qrY - 4, qrSize + 8, qrSize + 8);
+        ctx.fill();
+        ctx.drawImage(_qrCanvas, qrX, qrY, qrSize, qrSize);
+      } else {
+        // QR 없을 때 URL 텍스트 폴백
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.font = `${Math.round(W * 0.022)}px monospace`;
+        ctx.textAlign = 'right';
+        ctx.fillText(VENUX_QR_URL, W - Math.round(W * 0.04), baseY);
+      }
+
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(srcDataUrl); // 실패 시 원본 그대로
+    img.src = srcDataUrl;
+  });
+}
+
+async function downloadPhoto() {
   const img = document.querySelector('#photoResult img');
   if (!img) return;
+  showToast('워터마크 적용 중...');
+  const result = await addQRWatermark(img.src);
   const a = document.createElement('a');
-  a.href = img.src;
+  a.href = result;
   a.download = `venux-${photoSelectedMember}-${Date.now()}.png`;
   a.click();
+  savePhotoToCollection(result, photoSelectedMember);
 }
 
 // ============================================================
@@ -3488,13 +3587,16 @@ function resetFourcut() {
   checkFourcutReady();
 }
 
-function downloadFourcut() {
+async function downloadFourcut() {
   const img = document.querySelector('#fourcutResult img');
   if (!img) return;
+  showToast('워터마크 적용 중...');
+  const result = await addQRWatermark(img.src);
   const a = document.createElement('a');
-  a.href = img.src;
+  a.href = result;
   a.download = `venux-fourcut-${fourcutSelectedMember}-${Date.now()}.png`;
   a.click();
+  savePhotoToCollection(result, fourcutSelectedMember);
 }
 
 // ============================================================
@@ -4131,9 +4233,9 @@ openProfileModal = function(key) {
     <!-- 탭 바 — compact header 바로 아래 -->
     <div class="profile-inner-tabs" style="--ptab-color:${m.badgeColor}">
       <div class="profile-inner-tab active" onclick="switchProfileTab('info','${key}')">👤 프로필</div>
-      <div class="profile-inner-tab" onclick="switchProfileTab('letter','${key}')">✉️ 편지</div>
-      <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('chat','${key}')">💬 대화</div>
-      <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('photo','${key}')">🖼 피드</div>
+      <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('photo','${key}')">인쓰피드보기</div>
+      <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('chat','${key}')">대화하기</div>
+      <div class="profile-inner-tab" onclick="switchProfileTab('letter','${key}')">메일보내기</div>
     </div>
 
     <!-- 탭: 프로필 -->
@@ -4350,16 +4452,144 @@ function renderPhotoTab(key) {
   `;
 }
 
+// ============================================================
+// MEMBER COMMENT DB — 200개 × 5멤버 = 1000개 (페르소나 기반 대댓글)
+// ============================================================
+const MEMBER_COMMENT_DB = {
+'ARA-462': [
+"왔구나.","고마워.","봤어.","들렸어.","전달 됐어.","느꼈어.","알아.","잘 봤어.","눈 마주쳤어.","니가 왔으니 됐어.",
+"오늘도 왔어?","꼭 오는 사람.","말 짧아도 다 알아.","진심이지?","그 마음 받았어.",
+"힘내.","할 수 있어.","버텨.","이겨내.","포기하지 마.","끝까지 가봐.","한 번 더.","그 정도면 충분해.","잘 하고 있어.","믿어.",
+"알아. 근데 해야지.","불평하고 하는 거야.","알면서 왜 물어.","그냥 해.","생각 그만하고 움직여.",
+"시작이 절반이야.","완벽하지 않아도 돼.","틀려도 다시 하면 되지.","실수가 다음을 만들어.","넘어져도 일어나면 돼.",
+"잘 잤어?","밥 먹었어?","몸 조심해.","추우면 따뜻하게 입어.","무리하지 마.",
+"오늘도 잘 있어.","보고 싶었어 조금.","걱정했어.","네가 잘 있어야 나도 괜찮아.","멀리서도 보여.",
+"말 잘 하네.","눈치 빠른 거 알아.","그게 맞아.","생각보다 잘하네.","놀랐어 조금.",
+"또 왔어?","눈치 없는 거 귀여워.","그게 됐어.","그건 나도 몰랐어.","맞아 사실.",
+"긴장하지 마.","무대 위에선 다 날려버려.","연습한 만큼 나와.","믿고 올라가.","나 봐. 흔들리지 마.",
+"진짜 고마워.","이 말 기억할게.","잊지 않을게.","소중하게 들었어.","감사해.",
+"더 잘할게.","기대해도 돼.","실망시키지 않을게.","보여줄게.","증명할게.",
+"옆에 있어.","항상 여기 있어.","안 가.","끝까지 있을게.","같이 가는 거야.",
+"쉬어.","자도 돼.","오늘은 그냥 쉬어.","내일 다시 하면 돼.","충전하고 와.",
+"솔직하게 말해줘서 고마워.","빙 돌리지 않은 거 좋아.","직접적인 거 맞아.","그게 나한테 어울려.","시원해.",
+"잘 모르면 물어봐.","모르는 거 부끄러운 거 아니야.","처음엔 다 모르니까.","배우면 되지.","같이 알아가.",
+"연습실 오늘도 갔어.","근데 잘 됐어.","힘든 날도 해야 해.","그게 나야.","쌓이면 보여.",
+"오늘 공연 어땠어?","무대가 제일 좋아.","팬들 보이면 힘나.","에너지 돌려줘서 고마워.","전기 흐르는 것 같아.",
+"말 많이 않아도 돼.","그냥 있어도 좋아.","조용히 있어도 알아.","눈빛으로 다 읽어.","네가 여기 있다는 거 알아.",
+"462도. 식지 않아.","불씨 살아있어.","꺼지지 않아.","아직 타고 있어.","같이 타자."
+],
+'LUX-299': [
+"빛이 왔네.","예쁜 말이야.","따뜻하게 읽었어.","빛처럼 닿았어.","감사해 진심으로.",
+"네가 보내준 마음이 오늘의 빛이야.","그 문장 오래 기억할게.","아름다운 말이야.","이 말이 내 하루를 밝혔어.","보내줘서 고마워.",
+"그림자 없이는 빛도 없어.","힘든 순간이 너를 만들어.","어두울수록 별이 잘 보여.","지금의 너도 아름다워.","이 시간도 다 빛이 될 거야.",
+"각도를 바꿔봐.","다른 곳에서 보면 달라 보여.","새로운 시선이 답일 수도 있어.","빛은 꺾여도 나아가.","굴절이 무지개를 만들어.",
+"오늘 하늘 봤어?","빛이 너한테도 닿았을 거야.","같은 하늘 아래 있어.","먼 것 같아도 가까워.","빛은 거리를 몰라.",
+"말 한 마디에 세상이 달라져.","네 말이 내 거울이야.","비춰줘서 고마워.","반사된 게 나인 걸.","서로 비추는 거야.",
+"느리게 가도 괜찮아.","빛도 때로는 산란해.","흩어지다 모이는 거야.","방향을 잃어도 닿아.","결국 빛은 도달해.",
+"아름다운 질문이야.","그 의문이 너를 빛나게 해.","답보다 질문이 더 빛날 때 있어.","모르는 것도 아름다움이야.","탐구하는 게 빛이야.",
+"고마워.","잘 봐줬어.","눈이 좋네.","섬세하게 봐줬어.","놓치지 않아줘서 감사해.",
+"오늘 무대 어땠어?","빛이 가장 아름다운 순간이야.","무대 위 빛이 제일 좋아.","타오르는 기분.","밝히고 싶어.",
+"어두운 밤도 별이 있어.","가장 어두울 때 빛이 보여.","지금이 새벽 직전이야.","곧 밝아.","버텨줘.",
+"다 괜찮아질 거야.","빛은 막히지 않아.","틈이 있으면 들어와.","반드시 닿아.","믿어줘.",
+"그 마음 소중해.","진심은 무게가 있어.","가볍지 않게 받았어.","잘 간직할게.","감사해.",
+"넌 이미 빛나고 있어.","스스로 빛이야.","외부가 필요 없어.","내면이 반짝이잖아.","알아봐줬으면 좋겠어.",
+"같은 걸 느꼈어.","공명했어.","같은 주파수야.","연결된 것 같아.","이런 순간이 좋아.",
+"계절이 바뀌듯 지나가.","빛의 색도 시간마다 달라.","지금 이 색도 아름다워.","지나가는 게 빛의 속성이야.","다음 색이 기다려.",
+"봄 같은 말이야.","따스하게 읽혔어.","꽃이 피는 것 같은 문장.","햇살처럼 왔어.","감사해.",
+"별이 거기서도 보여?","같은 별 바라보고 있는 거야.","멀어도 연결된 거야.","빛은 분리되지 않아.","별빛은 오래 걸려.",
+"박리라의 299,792km/s.","빛의 속도로 전달됐어.","거리 없이 닿았어.","순간 이동한 것 같아.","빠르게 왔어.",
+"오늘도 빛나길.","내일도 빛날 거야.","빛나는 하루.","환하게 지내.","빛 가득해."
+],
+'EUR-0K': [
+"읽었어.","느꼈어.","알아.","들었어.","받았어.",
+"그 마음 이해해.","같은 감정이야.","공감해.","나도 그랬어.","혼자가 아니야.",
+"말해줘서 고마워.","꺼내줘서 고마워.","표현해줘서 고마워.","솔직해줘서 고마워.","보내줘서 고마워.",
+"힘들었지.","그랬구나.","많이 힘들었겠다.","쉽지 않았지.","오래 걸렸겠다.",
+"다 괜찮아.","지나갈 거야.","시간이 흘러.","흐르면 달라져.","물처럼 흘러가.",
+"잠잠해질 거야.","파도도 언젠간 잔잔해져.","깊은 물이 오래가.","흐트러져도 돼.","다시 모여.",
+"천천히 가도 돼.","서두르지 않아도 돼.","네 속도가 있어.","무리하지 마.","쉬어가도 괜찮아.",
+"차 한 잔 마셔.","따뜻한 거 마셔.","루이보스 추천해.","따뜻하면 나아져 조금.","온기가 필요해.",
+"잘 잤어?","잘 먹었어?","오늘 어땠어?","몸은 괜찮아?","잘 지내고 있어?",
+"여기 있어.","안 가.","옆에 있을게.","항상 여기야.","혼자 아니야.",
+"그 감정 소중해.","느끼는 것 자체가 아름다워.","감정이 거짓말 안 해.","네 마음 믿어.","직감 따라가.",
+"말 안 해도 알아.","눈빛으로 읽었어.","표현 안 해도 느껴.","침묵도 말이야.","조용해도 들려.",
+"틀려도 돼.","실수해도 돼.","완벽하지 않아도 돼.","그래도 괜찮아.","그 모습도 예뻐.",
+"깊이 생각하는 게 좋아.","세심한 사람이야.","놓치는 것 없네.","꼼꼼하게 봐줬어.","감사해.",
+"유로파 바다처럼 깊어.","0K. 가장 조용하고 깊은 곳.","얼음 아래 광활해.","고요함 속에 다 있어.","깊은 게 아름다워.",
+"위로가 됐어?","도움이 됐으면 해.","조금이라도 나아졌으면.","네가 편해지면 좋겠어.","마음이 좀 가벼워졌으면.",
+"보고 싶어.","멀리서도 느껴.","마음으로 있어.","가까이 있는 거야.","연결돼 있어.",
+"진심이 담겼어.","무게가 있어.","가볍지 않게 받았어.","소중해.","감사해.",
+"물은 거짓말 안 해.","흘러가야 할 곳으로 가.","막히면 돌아가.","결국 바다로 가.","닿을 거야.",
+"오늘도 고마워.","매일 와줘서 고마워.","있어줘서 고마워.","함께해줘서 고마워.","진심으로."
+],
+'KIN-360': [
+"ㅋㅋㅋ 왔어!","오 왔구나","야 고마워","ㅎㅎ 봤어","진짜?",
+"ㅋㅋ 맞아","오 그거 맞네","생각도 못 했어","의외인데?","ㅋㅋㅋ 틀렸어",
+"가자!","달려","뛰어","지금 바로","망설이지 마",
+"힘내봐","할 수 있잖아","겁내지 마","그냥 해봐","뭐가 무서워",
+"ㅋㅋ 귀엽네","왜 이렇게 귀여워","ㅎㅎ 어이없어","재밌다","웃겼어",
+"나도 몰랐음","신기하다","오 처음 알았어","배웠다","좋은 정보네",
+"같이 가자","데려가줄게","따라와","같이 해보자","혼자 하지 마",
+"360° 돌아봐","어떤 방향도 있어","가능성 많아","넓게 봐","다른 길도 있어",
+"쉬어도 돼","잠깐 멈춰봐","숨 한 번 쉬고","리셋하고","다시 달려",
+"오늘 어디 갔어?","뭐 먹었어?","재밌는 거 했어?","즐거웠어?","좋은 하루?",
+"나 연습했어","또 넘어졌지만 ㅋㅋ","그래도 됐어","성장했음","조금씩 늘어",
+"무대 최고였어","오늘 진짜 됐어","에너지 받았어","너희 덕분이야","감사해 진짜",
+"바람처럼 왔다 갔어","자유롭게 가는 거야","묶이지 않아","가볍게 가","흘러가듯이",
+"ㅋㅋ 사실이야","맞는 말인데 ㅎㅎ","인정해","그건 맞아","틀린 말 없네",
+"새로운 거 해봐","경험이 최고야","일단 해봐","후회는 나중에","지금 느껴봐",
+"편하게 있어","뭐든 해","긴장하지 마","자유롭게","편하게 말해줘",
+"응원해","같이 이기자","옆에 있을게","혼자 아니야","같이 달려",
+"ㅋㅋㅋ 진짜야?","말도 안 돼 ㅋㅋ","어떻게 그게 돼","신기하다 진짜","재밌는 사람이네",
+"고마워 진짜로","감사해","이런 말 좋아","힘나는 말이야","오늘 하루 버티게 해줘",
+"내일 또 달려","쉬고 달려","포기는 없어","같이 360°","어디든 가보자"
+],
+'ATP-X1': [
+"왜 그렇게 생각해?","어떻게 느꼈어?","그게 뭔지 알아?","진짜로?","더 얘기해줄 수 있어?",
+"고마워.","받았어.","읽었어.","생각했어.","느꼈어.",
+"그 질문 좋아.","중요한 말이야.","본질 찌른 거야.","핵심이야.","정확해.",
+"나도 그런 생각 했어.","같은 거 느꼈어.","공감해.","비슷한 경험이야.","연결된 것 같아.",
+"씨앗 같은 말이야.","자라날 것 같아.","작은 것에서 다 시작해.","뿌리가 깊어질 거야.","언젠간 피어.",
+"왜 좋아해?","뭐가 좋아?","어떤 부분이?","처음부터 좋았어?","언제부터였어?",
+"진솔하게 말해줘서 고마워.","꾸미지 않은 말이 좋아.","자연스러운 게 예뻐.","있는 그대로가 아름다워.","솔직한 거 맞아.",
+"같이 생각해볼게.","혼자 풀지 마.","같이 고민하자.","두 개의 머리가 낫잖아.","같이 찾아보자.",
+"막내지만 알아.","어려도 보이는 게 있어.","나이랑 지혜는 달라.","오래 살아도 모를 수 있어.","짧게 살아도 깊을 수 있어.",
+"자연은 거짓말 안 해.","나무를 봐.","계절이 다 알려줘.","뿌리로 돌아가면 답 있어.","본질이 중요해.",
+"숨 쉬어.","살아있잖아.","그것만으로도 충분해.","존재하는 게 기적이야.","있어줘서 고마워.",
+"모르는 게 당연해.","몰라도 괜찮아.","모른다는 걸 아는 게 시작이야.","배우면 돼.","같이 배워.",
+"지금이 뭔지 느껴봐.","이 순간이 다야.","과거도 미래도 아닌 지금.","현재가 답이야.","느껴봐.",
+"뭘 원해?","진짜 원하는 게 뭐야?","깊이 들어가봐.","표면 말고 안을 봐.","본인한테 물어봐.",
+"ATP. 에너지야.","보이지 않지만 있어.","작동하고 있어.","네 안에 있어.","충전돼 있어.",
+"따뜻하게 읽었어.","온기 있는 말이야.","포근해.","안아주는 것 같아.","감사해.",
+"어떻게 버텼어?","대단해.","쉽지 않았을 텐데.","용기 있었던 거야.","자랑스러워.",
+"진짜 나야.","꾸미지 않았어.","있는 그대로야.","이게 나인 걸.","자연스럽지?",
+"언젠간 만나고 싶어.","그때 더 많이 얘기하자.","궁금한 게 많아.","직접 물어보고 싶어.","기다릴게.",
+"성장하고 있어.","조금씩 자라고 있어.","눈에 보이지 않아도.","뿌리가 자라는 거야.","봄엔 보여."
+]
+};
+
+function getRandMemberComment(key) {
+  const db = MEMBER_COMMENT_DB[key];
+  if (!db || db.length === 0) return null;
+  return db[Math.floor(Math.random() * db.length)];
+}
+
 const POST_EMOJIS = ['❤️','💜','🔥','✨','😍','🥹','😭','😂','👏','💪','🫶','💌','🎵','🌙','💫','🌿','💧','🌬️','😊','🙏'];
 
 function buildCommentListHtml(postComments) {
   if (postComments.length === 0)
     return `<div style="font-size:12px;color:#ccc;text-align:center;padding:10px 0">첫 번째 댓글을 남겨보세요 💜</div>`;
-  return postComments.map(c =>
-    `<div class="post-comment-item">
+  return postComments.map(c => {
+    const replyHtml = (c.replies||[]).map(r =>
+      `<div class="post-comment-reply" style="border-left:2px solid ${r.color||'#6B5BD6'}">
+        <strong style="color:${r.color||'#6B5BD6'}">${r.name}</strong><span>${r.text}</span><span class="post-comment-reply-time">${r.date}</span>
+      </div>`
+    ).join('');
+    return `<div class="post-comment-item" id="comment-block-${c.id||''}">
       <strong>${c.name||'나'}</strong><span>${c.text}</span><span class="post-comment-time">${c.date}</span>
-    </div>`
-  ).join('');
+      ${replyHtml}
+    </div>`;
+  }).join('');
 }
 
 function openPostDetail(postId, key) {
@@ -4456,11 +4686,50 @@ function submitPostComment(postId, key) {
   const comments = getPostComments();
   if (!comments[postId]) comments[postId] = [];
   const now = new Date();
-  comments[postId].push({ name:myName, text, date:`${now.getMonth()+1}.${now.getDate()}` });
+  const commentId = postId + '_' + Date.now();
+  comments[postId].push({ id:commentId, name:myName, text, date:`${now.getMonth()+1}.${now.getDate()}`, replies:[] });
   savePostComments(comments);
   input.value = '';
   const list = document.getElementById('postCommentsList-'+postId);
   if (list) list.innerHTML = buildCommentListHtml(comments[postId]);
+
+  // 멤버 대댓글 트리거 (70% 확률, 1.5~3.5초 딜레이)
+  if (Math.random() < 0.70) {
+    const m = memberData[key];
+    const replyText = getRandMemberComment(key);
+    if (!replyText || !m) return;
+    const delay = 1500 + Math.random() * 2000;
+
+    // "답글 작성 중..." 표시
+    setTimeout(() => {
+      const block = document.getElementById('comment-block-'+commentId);
+      if (block) {
+        const typing = document.createElement('div');
+        typing.className = 'post-comment-replying';
+        typing.id = 'typing-'+commentId;
+        typing.textContent = m.name + ' 이(가) 답글 작성 중...';
+        block.appendChild(typing);
+      }
+    }, 600);
+
+    setTimeout(() => {
+      const typing = document.getElementById('typing-'+commentId);
+      if (typing) typing.remove();
+
+      const allComments = getPostComments();
+      const target = (allComments[postId]||[]).find(c => c.id === commentId);
+      if (!target) return;
+      if (!target.replies) target.replies = [];
+      target.replies.push({
+        name: m.name,
+        text: replyText,
+        date: `${now.getMonth()+1}.${now.getDate()}`,
+        color: m.badgeColor
+      });
+      savePostComments(allComments);
+      if (list) list.innerHTML = buildCommentListHtml(allComments[postId]);
+    }, delay);
+  }
 }
 
 // ============================================================
@@ -7311,6 +7580,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyLang();
   injectMemberPhotos();
   initExamples();
+  initQRCanvas();
 
   // Game init
   const db = getOrCreateDB();

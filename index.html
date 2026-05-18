@@ -27,6 +27,9 @@
     .screen.active { opacity:1; pointer-events:auto; transform:translateY(0); z-index:10; }
 
     /* HEADER */
+    .back-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px 6px 8px; border-radius:20px; border:none; background:rgba(107,91,214,0.08); color:#6B5BD6; font-size:13px; font-weight:600; font-family:'Noto Sans KR',sans-serif; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background 0.15s; flex-shrink:0; }
+    .back-btn:active { background:rgba(107,91,214,0.18); }
+    .back-btn svg { width:16px; height:16px; }
     .header { position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:rgba(245,243,255,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.04); }
     .header-logo { font-family:'Fraunces',serif; font-size:20px; font-weight:600; background:linear-gradient(135deg,#6B5BD6,#8B6BD6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
     .header-actions { display:flex; gap:8px; }
@@ -163,6 +166,33 @@
     .photo-member-big img { width:100%; height:100%; object-fit:cover; border-radius:16px; }
     .photo-member-big-label { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.55); color:white; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; white-space:nowrap; backdrop-filter:blur(4px); }
     .photo-generate-btn { width:100%; padding:14px; border:none; border-radius:14px; background:linear-gradient(135deg,#6B5BD6,#8B6BD6); color:white; font-size:15px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:all 0.2s; }
+    /* 의상/배경 아코디언 */
+    .photo-options-accordion { margin-bottom:16px; border-radius:14px; overflow:hidden; border:1px solid rgba(107,91,214,0.15); display:none; }
+    .photo-options-accordion.visible { display:block; }
+    /* 아코디언 — CSS 변수로 색상 분리 */
+    .accord-item { background:#fff; --ac:#6B5BD6; --ac-rgb:107,91,214; }
+    .accord-item + .accord-item { border-top:1px solid rgba(0,0,0,0.06); }
+    .accord-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; }
+    .accord-header-left { display:flex; align-items:center; gap:8px; }
+    .accord-title { font-size:13px; font-weight:600; color:#333; font-family:'Noto Sans KR',sans-serif; }
+    .accord-selected { font-size:11px; color:var(--ac); background:rgba(var(--ac-rgb),0.1); padding:2px 8px; border-radius:20px; }
+    .accord-arrow { font-size:11px; color:#aaa; transition:transform 0.2s; }
+    .accord-item.open .accord-arrow { transform:rotate(180deg); }
+    .accord-body { display:none; padding:0 16px 14px; }
+    .accord-item.open .accord-body { display:block; }
+    .accord-cat-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; margin-bottom:10px; scrollbar-width:none; -ms-overflow-style:none; border-bottom:1px solid rgba(0,0,0,0.06); }
+    .accord-cat-tabs::-webkit-scrollbar { display:none; }
+    .accord-cat-tab { padding:5px 12px; border-radius:20px; border:1.5px solid rgba(var(--cat-rgb),0.25); background:rgba(var(--cat-rgb),0.06); font-size:11px; font-family:'Noto Sans KR',sans-serif; color:#777; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s; }
+    .accord-cat-tab.active { background:var(--cat); border-color:var(--cat); color:#fff; font-weight:700; }
+    .accord-chips { display:flex; flex-wrap:wrap; gap:7px; max-height:120px; overflow-y:auto; scrollbar-width:none; }
+    .accord-chips::-webkit-scrollbar { display:none; }
+    .accord-chip { padding:6px 12px; border-radius:20px; border:1.5px solid rgba(var(--chip-rgb),0.25); background:rgba(var(--chip-rgb),0.05); font-size:12px; font-family:'Noto Sans KR',sans-serif; color:#555; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+    .accord-chip.active { background:var(--chip); border-color:var(--chip); color:#fff; font-weight:600; }
+    .accord-chip:active { transform:scale(0.95); }
+    /* 의상: 대주제 로즈핑크 / 소주제 웜오렌지 */
+    #accordOutfit { --ac:#E8568A; --ac-rgb:232,86,138; --cat:#E8568A; --cat-rgb:232,86,138; --chip:#F97316; --chip-rgb:249,115,22; }
+    /* 배경: 대주제 스카이블루 / 소주제 에메랄드 */
+    #accordBg     { --ac:#0EA5E9; --ac-rgb:14,165,233;  --cat:#0EA5E9; --cat-rgb:14,165,233;  --chip:#10B981; --chip-rgb:16,185,129; }
     .photo-generate-btn:disabled { opacity:0.4; cursor:not-allowed; background:#ccc; }
     .photo-generate-btn:not(:disabled):active { transform:scale(0.97); }
     .photo-result { margin-top:16px; text-align:center; }
@@ -195,21 +225,23 @@
     .photo-mode-tab.active { background:#5B5BD6; color:white; border-color:#5B5BD6; }
     .photo-mode-tab .tab-emoji { font-size:18px; display:block; margin-bottom:2px; }
     .photo-mode-tab .tab-sub { font-size:11px; font-weight:400; opacity:0.7; }
-    .photo-mode-content { display:none; }
-    .photo-mode-content.active { display:block; }
+    /* 그리드 스태킹: 두 모드 동일 셀 → 높이 고정 */
+    .photo-modes-frame { display:grid; }
+    .photo-mode-content { grid-row:1; grid-column:1; visibility:hidden; pointer-events:none; }
+    .photo-mode-content.active { visibility:visible; pointer-events:all; }
 
     /* 4-CUT GRID */
-    .fourcut-upload-guide { text-align:center; margin-bottom:12px; }
-    .fourcut-upload-guide .guide-main { font-size:14px; font-weight:600; color:#333; }
-    .fourcut-upload-guide .guide-sub { font-size:12px; color:#999; margin-top:4px; }
-    .fourcut-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
-    .fourcut-slot { aspect-ratio:1; border-radius:14px; overflow:hidden; background:#f5f5f5; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; border:2px dashed #ddd; transition:all 0.2s; position:relative; }
+    .fourcut-upload-guide { text-align:center; margin-bottom:8px; }
+    .fourcut-upload-guide .guide-main { font-size:13px; font-weight:600; color:#333; }
+    .fourcut-upload-guide .guide-sub { font-size:11px; color:#999; margin-top:2px; }
+    .fourcut-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+    .fourcut-slot { height:90px; aspect-ratio:unset; border-radius:14px; overflow:hidden; background:#f5f5f5; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; border:2px dashed #ddd; transition:all 0.2s; position:relative; }
     .fourcut-slot.filled { border-style:solid; border-color:#6B5BD6; }
     .fourcut-slot img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; }
     .fourcut-slot .slot-label { position:absolute; top:6px; left:6px; background:rgba(0,0,0,0.5); color:white; font-size:10px; font-weight:600; padding:2px 8px; border-radius:8px; z-index:2; }
     .fourcut-slot .slot-placeholder { display:flex; flex-direction:column; align-items:center; gap:4px; color:#bbb; font-size:12px; }
     .fourcut-slot .slot-placeholder .slot-num { font-size:20px; font-weight:700; color:#ddd; }
-    .fourcut-counter { text-align:center; font-size:13px; color:#888; margin-bottom:12px; }
+    .fourcut-counter { text-align:center; font-size:12px; color:#888; margin-bottom:10px; }
     .fourcut-counter span { color:#5B5BD6; font-weight:700; }
 
     /* 4-CUT RESULT FRAME */
@@ -261,7 +293,14 @@
     /* 인스타그램 스타일 헤더 */
     .ig-header { padding:0 16px 14px; }
     .ig-top-row { display:flex; align-items:center; gap:24px; margin-bottom:14px; }
-    .ig-photo-ring { width:90px; height:90px; border-radius:50%; padding:3px; background:conic-gradient(from 0deg, var(--ig-color,#6B5BD6) 0%, color-mix(in srgb, var(--ig-color,#6B5BD6) 60%, #fff) 100%); flex-shrink:0; }
+    .ig-photo-ring { width:90px; height:90px; border-radius:50%; padding:3px; background:conic-gradient(from 0deg, var(--ig-color,#6B5BD6) 0%, color-mix(in srgb, var(--ig-color,#6B5BD6) 60%, #fff) 100%); flex-shrink:0; cursor:pointer; }
+    /* 사진 라이트박스 */
+    .photo-lightbox { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0); display:flex; align-items:center; justify-content:center; transition:background 0.22s ease; pointer-events:none; }
+    .photo-lightbox.open { background:rgba(0,0,0,0.88); pointer-events:all; }
+    .photo-lightbox-img { width:80vw; height:80vw; max-width:320px; max-height:320px; border-radius:50%; object-fit:cover; border:4px solid white; transform:scale(0.6); opacity:0; transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease; box-shadow:0 8px 40px rgba(0,0,0,0.5); }
+    .photo-lightbox.open .photo-lightbox-img { transform:scale(1); opacity:1; }
+    .photo-lightbox-close { position:absolute; top:24px; right:24px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.3); color:#fff; font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.22s; }
+    .photo-lightbox.open .photo-lightbox-close { opacity:1; }
     .ig-photo-inner { width:100%; height:100%; border-radius:50%; overflow:hidden; border:2.5px solid white; }
     .ig-photo-inner img { width:100%; height:100%; object-fit:cover; }
     .ig-stats { display:flex; flex:1; justify-content:space-around; align-items:center; }
@@ -957,7 +996,7 @@
     <div class="onboarding-step" id="onboardStep1">
       <div class="onboarding-emoji">✨</div>
       <div class="onboarding-title">VenuX Daily에<br>오신 걸 환영해요</div>
-      <div class="onboarding-sub">5명의 AI K-pop 아이돌과<br>매일 만나는 일상이 시작됩니다</div>
+      <div class="onboarding-sub">5명의 멤버와<br>매일 만나는 일상이 시작됩니다</div>
       <button class="onboarding-btn" onclick="onboardNext(2)">시작하기 →</button>
     </div>
     <!-- Step 2: Nickname -->
@@ -1067,7 +1106,7 @@
   <div class="about-card">
     <div class="about-title">VenuX Oracle ✨</div>
     <div class="about-text">
-      5명의 AI K-pop 아이돌이 당신의 고민에 각자의 철학으로 답합니다.<br><br>
+      5명의 멤버가 당신의 고민에 각자의 철학으로 답합니다.<br><br>
       ARA-462 🔥 이루나 · 불<br>
       LUX-299 ✨ 박리라 · 빛<br>
       EUR-0K 💧 신지우 · 물<br>
@@ -1165,7 +1204,7 @@
   <div class="headline-section">
     <div class="headline-main">Ask VenuX<br>anything.</div>
     <div class="headline-sub">VenuX에게 물어보세요</div>
-    <div class="headline-desc">5 AI idols · 5 honest answers · One you didn't expect</div>
+    <div class="headline-desc">5 idols · 5 honest answers · One you didn't expect</div>
   </div>
 
   <div class="input-section">
@@ -1193,7 +1232,7 @@
   </div>
 
   <div class="cta-section">
-    <button class="cta-btn" id="ctaBtn" onclick="handleAsk()" data-i18n="cta_group">전체에게 묻기 →</button>
+    <button class="cta-btn" id="ctaBtn" onclick="handleAsk()" data-i18n="cta_group">전 멤버들에게 물어볼까요? →</button>
   </div>
 
   <div class="footer">Powered by <a href="#">SOAVIZ AI STUDIO</a> · Built on Genspark ✨</div>
@@ -1209,16 +1248,17 @@
 
 <!-- SCREEN 3: RESULTS -->
 <div class="screen" id="screen-results">
-  <div class="results-header">
-    <div class="results-question" id="resultsQuestion"></div>
+  <div class="results-header" style="display:flex;align-items:center;gap:10px">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>뒤로</button>
+    <div class="results-question" id="resultsQuestion" style="flex:1"></div>
   </div>
   <div class="results-cards" id="resultsCards"></div>
 
   <div class="verdict-section" id="verdictSection"></div>
 
   <div class="photo-section" id="photoSection" style="display:none;">
-    <div class="photo-section-title">📸 멤버와 함께 셀카찍기</div>
-    <div class="photo-section-sub">AI 멤버와 합성 사진을 만들어보세요</div>
+    <div class="photo-section-title">📸 최애 멤버와 함께 셀카찍기</div>
+    <div class="photo-section-sub">좋아하는 멤버와 셀카 찍어봐요!</div>
 
     <!-- MODE TABS -->
     <div class="photo-mode-tabs">
@@ -1226,9 +1266,46 @@
       <button class="photo-mode-tab" onclick="switchPhotoMode('fourcut')"><span class="tab-emoji">🎞️</span>인생네컷 모드<span class="tab-sub">4컷 추억 만들기</span></button>
     </div>
 
+    <!-- 두 모드 고정 높이 컨테이너 -->
+    <div class="photo-modes-frame">
     <!-- MODE 1: SELFIE (existing) -->
     <div class="photo-mode-content active" id="photoModeSelfie">
       <div class="photo-member-row" id="photoMemberRow"></div>
+
+      <!-- 의상 / 배경 아코디언 -->
+      <div class="photo-options-accordion" id="photoOptionsAccordion">
+        <!-- 의상 -->
+        <div class="accord-item" id="accordOutfit">
+          <div class="accord-header" onclick="toggleAccord('accordOutfit')">
+            <div class="accord-header-left">
+              <span style="font-size:15px">👗</span>
+              <span class="accord-title">오늘 뭐입을까?</span>
+              <span class="accord-selected" id="accordOutfitLabel">기본</span>
+            </div>
+            <span class="accord-arrow">▼</span>
+          </div>
+          <div class="accord-body">
+            <div class="accord-cat-tabs" id="outfitCatTabs"></div>
+            <div class="accord-chips" id="outfitChips"></div>
+          </div>
+        </div>
+        <!-- 배경 -->
+        <div class="accord-item" id="accordBg">
+          <div class="accord-header" onclick="toggleAccord('accordBg')">
+            <div class="accord-header-left">
+              <span style="font-size:15px">🌅</span>
+              <span class="accord-title">어디가서 찍을까?</span>
+              <span class="accord-selected" id="accordBgLabel">포토부스</span>
+            </div>
+            <span class="accord-arrow">▼</span>
+          </div>
+          <div class="accord-body">
+            <div class="accord-cat-tabs" id="bgCatTabs"></div>
+            <div class="accord-chips" id="bgChips"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="photo-preview-grid" id="photoPreviewGrid">
         <div class="photo-preview-box" id="photoMyPreview">
           <div class="photo-preview-placeholder" id="photoUploadPlaceholder" onclick="document.getElementById('photoFileInput').click()" style="cursor:pointer">
@@ -1245,7 +1322,7 @@
       </div>
       <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
       <div class="photo-status-text" id="photoStatusText" style="display:none;"></div>
-      <button class="photo-generate-btn" id="photoGenerateBtn" onclick="handlePhotoGenerate()" disabled>✨ 멤버와 함께 셀카찍기</button>
+      <button class="photo-generate-btn" id="photoGenerateBtn" onclick="handlePhotoGenerate()" disabled>✨ 최애 멤버와 함께 셀카찍기</button>
       <div class="photo-result" id="photoResult" style="display:none;"></div>
     </div>
 
@@ -1264,17 +1341,51 @@
       <input type="file" id="fourcutFileInput" accept="image/*" capture="user" style="display:none" onchange="handleFourcutUpload(event)">
       <div class="fourcut-counter" id="fourcutCounter"><span>0</span> / 4 업로드 완료</div>
       <div class="photo-member-row" id="fourcutMemberRow"></div>
+
+      <!-- 인생네컷 의상/배경 아코디언 -->
+      <div class="photo-options-accordion" id="fcOptionsAccordion">
+        <div class="accord-item" id="fcAccordOutfit" style="--ac:#E8568A;--ac-rgb:232,86,138;--cat:#E8568A;--cat-rgb:232,86,138;--chip:#F97316;--chip-rgb:249,115,22">
+          <div class="accord-header" onclick="toggleAccord('fcAccordOutfit')">
+            <div class="accord-header-left">
+              <span style="font-size:15px">👗</span>
+              <span class="accord-title">오늘 뭐입을까?</span>
+              <span class="accord-selected" id="fcAccordOutfitLabel">기본</span>
+            </div>
+            <span class="accord-arrow">▼</span>
+          </div>
+          <div class="accord-body">
+            <div class="accord-cat-tabs" id="fcOutfitCatTabs"></div>
+            <div class="accord-chips" id="fcOutfitChips"></div>
+          </div>
+        </div>
+        <div class="accord-item" id="fcAccordBg" style="--ac:#0EA5E9;--ac-rgb:14,165,233;--cat:#0EA5E9;--cat-rgb:14,165,233;--chip:#10B981;--chip-rgb:16,185,129">
+          <div class="accord-header" onclick="toggleAccord('fcAccordBg')">
+            <div class="accord-header-left">
+              <span style="font-size:15px">🌅</span>
+              <span class="accord-title">어디가서 찍을까?</span>
+              <span class="accord-selected" id="fcAccordBgLabel">포토부스</span>
+            </div>
+            <span class="accord-arrow">▼</span>
+          </div>
+          <div class="accord-body">
+            <div class="accord-cat-tabs" id="fcBgCatTabs"></div>
+            <div class="accord-chips" id="fcBgChips"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="photo-status-text" id="fourcutStatusText" style="display:none;"></div>
       <button class="photo-generate-btn" id="fourcutGenerateBtn" onclick="handleFourcutGenerate()" disabled>✨ 인생네컷 만들기</button>
       <div class="photo-result" id="fourcutResult" style="display:none;"></div>
     </div>
+    </div><!-- /photo-modes-frame -->
   </div>
 
   <!-- Photo API Key Mini Modal -->
   <div class="photo-api-key-modal" id="photoApiKeyModal" onclick="if(event.target===this)closePhotoApiModal()">
     <div class="photo-api-key-card">
-      <h3>🔑 AI 합성 사진을 만들까요?</h3>
-      <p style="font-size:12px;color:#888;margin-bottom:12px;text-align:center">OpenAI API Key를 입력하면 실시간 AI 합성이 가능해요</p>
+      <h3>🔑 셀카 합성을 시작할까요?</h3>
+      <p style="font-size:12px;color:#888;margin-bottom:12px;text-align:center">OpenAI API Key를 입력하면 실시간 합성이 가능해요</p>
       <input type="password" id="photoApiKeyInput" placeholder="sk-..." autocomplete="off">
       <div class="btn-row">
         <button class="btn-primary" onclick="savePhotoApiKey()">Save & Continue</button>
@@ -1300,6 +1411,7 @@
 <!-- SCREEN 4: AFFINITY PAGE -->
 <div class="screen" id="screen-affinity">
   <div class="affinity-page-header">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>뒤로</button>
     <span class="affinity-page-title">💕 친밀도</span>
     <button class="affinity-sort-btn" id="affinitySortBtn" onclick="toggleAffinitySort()">친밀도순</button>
   </div>
@@ -1311,6 +1423,7 @@
 <!-- SCREEN 5: COLLECTION / PHOTO ALBUM -->
 <div class="screen" id="screen-collection">
   <div class="header">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>뒤로</button>
     <div class="header-logo">📸 사진첩</div>
     <div class="header-actions"></div>
   </div>
@@ -1322,6 +1435,7 @@
 <!-- SCREEN 6: ACHIEVEMENTS -->
 <div class="screen" id="screen-achievements">
   <div class="header">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>뒤로</button>
     <div class="header-logo">🏆 도전과제</div>
     <div class="header-actions"></div>
   </div>
@@ -1331,6 +1445,7 @@
 <!-- SCREEN 7: SETTINGS/GAME -->
 <div class="screen" id="screen-game-settings">
   <div class="header">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>뒤로</button>
     <div class="header-logo">⚙️ 설정</div>
     <div class="header-actions"></div>
   </div>
@@ -1555,6 +1670,12 @@
 </div>
 
 <!-- TAB BAR -->
+<!-- 사진 라이트박스 -->
+<div class="photo-lightbox" id="photoLightbox" onclick="closePhotoLightbox()">
+  <div class="photo-lightbox-close" onclick="closePhotoLightbox()">✕</div>
+  <img class="photo-lightbox-img" id="photoLightboxImg" src="" alt="">
+</div>
+
 <div class="tab-bar" id="tabBar">
   <div class="tab-bar-item active" data-tab="screen-landing" onclick="switchTab(this)">
     <div class="tab-icon">🏠</div>
@@ -2044,46 +2165,395 @@ const responseBank = {
 };
 
 const QUESTION_POOL = [
+  // ── 연애상담 (100) ──
   {text:'전 남친한테 연락 왔어요, 답장할까요?',color:'#B8A4D4',cat:'love'},
-  {text:'헤어졌는데 다시 만나고 싶어요',color:'#9BAE82',cat:'love'},
+  {text:'헤어졌는데 다시 만나고 싶어요',color:'#C76B5E',cat:'love'},
   {text:'썸인지 호감인지 모르겠어요',color:'#D9B26B',cat:'love'},
-  {text:'오래 사귄 사람과 권태기예요',color:'#7AA0A3',cat:'love'},
-  {text:'고백받았는데 답을 못 하겠어요',color:'#9BAE82',cat:'love'},
-  {text:'장거리 연애 너무 힘들어요',color:'#7AA0A3',cat:'love'},
-  {text:'이 사람과 결혼해도 될까요?',color:'#D9B26B',cat:'love'},
-  {text:'친구를 좋아하게 됐어요',color:'#B8A4D4',cat:'love'},
-  {text:'내가 좋아하는 만큼 좋아해주지 않아요',color:'#C76B5E',cat:'love'},
-  {text:'이별을 어떻게 말해야 할까요?',color:'#C76B5E',cat:'love'},
+  {text:'오래 사귄 사람과 권태기예요',color:'#9BAE82',cat:'love'},
+  {text:'고백받았는데 답을 못 하겠어요',color:'#7AA0A3',cat:'love'},
+  {text:'장거리 연애 너무 힘들어요',color:'#B8A4D4',cat:'love'},
+  {text:'이 사람과 결혼해도 될까요?',color:'#C76B5E',cat:'love'},
+  {text:'친구를 좋아하게 됐어요',color:'#D9B26B',cat:'love'},
+  {text:'내가 좋아하는 만큼 좋아해주지 않아요',color:'#9BAE82',cat:'love'},
+  {text:'이별을 어떻게 말해야 할까요?',color:'#7AA0A3',cat:'love'},
+  {text:'좋아하는 사람한테 먼저 연락해도 될까요?',color:'#B8A4D4',cat:'love'},
+  {text:'연락이 뜸해졌어요, 관심이 없어진 걸까요?',color:'#C76B5E',cat:'love'},
+  {text:'나만 좋아하는 것 같아요',color:'#D9B26B',cat:'love'},
+  {text:'데이트 비용 어떻게 나눠야 해요?',color:'#9BAE82',cat:'love'},
+  {text:'상대방이 너무 바빠요',color:'#7AA0A3',cat:'love'},
+  {text:'밀당이 너무 힘들어요',color:'#B8A4D4',cat:'love'},
+  {text:'연애 경험이 없어요',color:'#C76B5E',cat:'love'},
+  {text:'나이 차이 많이 나는 연애 괜찮을까요?',color:'#D9B26B',cat:'love'},
+  {text:'전 연인과 친구로 지낼 수 있을까요?',color:'#9BAE82',cat:'love'},
+  {text:'마음이 식은 것 같아요',color:'#7AA0A3',cat:'love'},
+  {text:'집착하게 돼요',color:'#B8A4D4',cat:'love'},
+  {text:'사귀는 게 두려워요',color:'#C76B5E',cat:'love'},
+  {text:'상대방이 바람을 피운 것 같아요',color:'#D9B26B',cat:'love'},
+  {text:'질투가 너무 심해요',color:'#9BAE82',cat:'love'},
+  {text:'연애하면서 자존심 상해요',color:'#7AA0A3',cat:'love'},
+  {text:'상대방 가족이 저를 싫어해요',color:'#B8A4D4',cat:'love'},
+  {text:'사랑받고 있는지 모르겠어요',color:'#C76B5E',cat:'love'},
+  {text:'연애 중에 다른 사람이 좋아졌어요',color:'#D9B26B',cat:'love'},
+  {text:'연락을 자주 해야 하나요?',color:'#9BAE82',cat:'love'},
+  {text:'싸우면 냉전이 너무 길어요',color:'#7AA0A3',cat:'love'},
+  {text:'상대방이 변했어요',color:'#B8A4D4',cat:'love'},
+  {text:'감정 표현이 어려워요',color:'#C76B5E',cat:'love'},
+  {text:'상대방이 너무 의존해요',color:'#D9B26B',cat:'love'},
+  {text:'내 페이스를 잃어가는 것 같아요',color:'#9BAE82',cat:'love'},
+  {text:'결혼 얘기가 나왔는데 무서워요',color:'#7AA0A3',cat:'love'},
+  {text:'미래를 같이 그리기가 힘들어요',color:'#B8A4D4',cat:'love'},
+  {text:'연락이 두절됐어요',color:'#C76B5E',cat:'love'},
+  {text:'고백을 거절했는데 후회돼요',color:'#D9B26B',cat:'love'},
+  {text:'연애 세포가 죽은 것 같아요',color:'#9BAE82',cat:'love'},
+  {text:'나이 들수록 연애가 더 힘든 것 같아요',color:'#7AA0A3',cat:'love'},
+  {text:'상대방 과거 연애 얘기가 자꾸 신경 써요',color:'#B8A4D4',cat:'love'},
+  {text:'좋아하는 마음을 숨기고 있어요',color:'#C76B5E',cat:'love'},
+  {text:'연애와 일 사이에서 균형이 안 잡혀요',color:'#D9B26B',cat:'love'},
+  {text:'자꾸 헤어지자는 말이 나와요',color:'#9BAE82',cat:'love'},
+  {text:'화해하는 방법을 모르겠어요',color:'#7AA0A3',cat:'love'},
+  {text:'서로 다른 미래를 꿈꾸는 것 같아요',color:'#B8A4D4',cat:'love'},
+  {text:'연애 중에 혼자만의 시간이 필요해요',color:'#C76B5E',cat:'love'},
+  {text:'전 연인이 잘 사는 것 같아요',color:'#D9B26B',cat:'love'},
+  {text:'이별 후 새 연애를 시작해도 될까요?',color:'#9BAE82',cat:'love'},
+  {text:'아직도 전 연인을 사랑하는 것 같아요',color:'#7AA0A3',cat:'love'},
+  {text:'소개팅에서 연락이 끊겼어요',color:'#B8A4D4',cat:'love'},
+  {text:'사랑인지 습관인지 모르겠어요',color:'#C76B5E',cat:'love'},
+  {text:'연인과 함께 있어도 외로워요',color:'#D9B26B',cat:'love'},
+  {text:'자꾸 상처받는 패턴이 반복돼요',color:'#9BAE82',cat:'love'},
+  {text:'상대방을 믿기가 어려워요',color:'#7AA0A3',cat:'love'},
+  {text:'나를 있는 그대로 받아줄 사람이 있을까요?',color:'#B8A4D4',cat:'love'},
+  {text:'이성 친구와의 경계가 모호해요',color:'#C76B5E',cat:'love'},
+  {text:'사귄 지 얼마 안 됐는데 지쳐요',color:'#D9B26B',cat:'love'},
+  {text:'상대방이 날 바꾸려 해요',color:'#9BAE82',cat:'love'},
+  {text:'설레는 감정이 사라졌어요',color:'#7AA0A3',cat:'love'},
+  {text:'연인이 나를 당연하게 여기는 것 같아요',color:'#B8A4D4',cat:'love'},
+  {text:'연인이 비교를 자주 해요',color:'#C76B5E',cat:'love'},
+  {text:'가치관이 너무 달라요',color:'#D9B26B',cat:'love'},
+  {text:'상대방 진심이 느껴지지 않아요',color:'#9BAE82',cat:'love'},
+  {text:'이 사람과 결혼할 자신이 없어요',color:'#7AA0A3',cat:'love'},
+  {text:'감정 기복이 심한 상대방이 지쳐요',color:'#B8A4D4',cat:'love'},
+  {text:'연인의 과거가 자꾸 신경 써요',color:'#C76B5E',cat:'love'},
+  {text:'상대방이 무관심해요',color:'#D9B26B',cat:'love'},
+  {text:'연인과 취미가 너무 달라요',color:'#9BAE82',cat:'love'},
+  {text:'좋아하는 사람에게 다가갈 용기가 없어요',color:'#7AA0A3',cat:'love'},
+  {text:'연인이 내 감정을 무시하는 것 같아요',color:'#B8A4D4',cat:'love'},
+  {text:'연인이 약속을 자주 어겨요',color:'#C76B5E',cat:'love'},
+  {text:'내 감정이 뭔지 모르겠어요',color:'#D9B26B',cat:'love'},
+  {text:'연애에 지쳐 혼자가 편한 것 같아요',color:'#9BAE82',cat:'love'},
+  {text:'새로운 사람을 만날 자신이 없어요',color:'#7AA0A3',cat:'love'},
+  {text:'소개팅 성공률 높이는 방법이 있을까요?',color:'#B8A4D4',cat:'love'},
+  {text:'연인이 내 꿈을 응원해주지 않아요',color:'#C76B5E',cat:'love'},
+  {text:'연인한테 솔직해지면 사랑받지 못할까봐 무서워요',color:'#D9B26B',cat:'love'},
+  {text:'연인의 작은 습관이 거슬려요',color:'#9BAE82',cat:'love'},
+  {text:'오랜 친구와 연인이 됐어요',color:'#7AA0A3',cat:'love'},
+  {text:'만나면 좋은데 헤어지면 생각이 안 나요',color:'#B8A4D4',cat:'love'},
+  {text:'스킨십에 대한 생각이 달라요',color:'#C76B5E',cat:'love'},
+  {text:'상대방이 내 경제력을 보는 것 같아요',color:'#D9B26B',cat:'love'},
+  {text:'전 연인이 그리운 건지 외로운 건지 모르겠어요',color:'#9BAE82',cat:'love'},
+  {text:'고백 타이밍을 모르겠어요',color:'#7AA0A3',cat:'love'},
+  {text:'좋아하는 사람이 곧 해외로 가요',color:'#B8A4D4',cat:'love'},
+  {text:'연인이 날 좋아하는 게 맞는 건가요?',color:'#C76B5E',cat:'love'},
+  {text:'내가 너무 예민한 걸까요?',color:'#D9B26B',cat:'love'},
+  {text:'연애를 잘 하는 방법이 있을까요?',color:'#9BAE82',cat:'love'},
+  {text:'자꾸 이상형이 바뀌어요',color:'#7AA0A3',cat:'love'},
+  {text:'같은 공간에 있어도 각자 폰만 봐요',color:'#B8A4D4',cat:'love'},
+  {text:'이 사람, 맞는 건지 아닌 건지 모르겠어요',color:'#C76B5E',cat:'love'},
+  {text:'주변에서 우리 둘이 안 어울린다고 해요',color:'#D9B26B',cat:'love'},
+  {text:'연인이 나를 이해해주지 않아요',color:'#9BAE82',cat:'love'},
+  {text:'연애하기 두렵지만 외롭기도 해요',color:'#7AA0A3',cat:'love'},
+  // ── 우정상담 (100) ──
   {text:'친구가 결혼하는데 너무 부러워요',color:'#7AA0A3',cat:'friend'},
-  {text:'친구가 내 험담했대요',color:'#C76B5E',cat:'friend'},
-  {text:'오랜 친구와 멀어졌어요',color:'#9BAE82',cat:'friend'},
-  {text:'단톡방에서 소외감 느껴요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구가 내 험담했대요',color:'#9BAE82',cat:'friend'},
+  {text:'오랜 친구와 멀어졌어요',color:'#D9B26B',cat:'friend'},
+  {text:'단톡방에서 소외감 느껴요',color:'#B8A4D4',cat:'friend'},
   {text:'친구가 자꾸 돈 빌려달라고 해요',color:'#C76B5E',cat:'friend'},
-  {text:'친구의 연인이 별로예요',color:'#D9B26B',cat:'friend'},
-  {text:'새 친구 사귀기가 어려워요',color:'#B8A4D4',cat:'friend'},
-  {text:'친구가 너무 부정적이에요',color:'#9BAE82',cat:'friend'},
-  {text:'절교를 고민 중이에요',color:'#C76B5E',cat:'friend'},
-  {text:'친구가 성공해서 비교돼요',color:'#D9B26B',cat:'friend'},
+  {text:'친구의 연인이 별로예요',color:'#7AA0A3',cat:'friend'},
+  {text:'새 친구 사귀기가 어려워요',color:'#9BAE82',cat:'friend'},
+  {text:'친구가 너무 부정적이에요',color:'#D9B26B',cat:'friend'},
+  {text:'절교를 고민 중이에요',color:'#B8A4D4',cat:'friend'},
+  {text:'친구가 성공해서 비교돼요',color:'#C76B5E',cat:'friend'},
+  {text:'친구가 나만 빼고 놀았어요',color:'#7AA0A3',cat:'friend'},
+  {text:'베프랑 사이가 어색해졌어요',color:'#9BAE82',cat:'friend'},
+  {text:'친구가 항상 자기 얘기만 해요',color:'#D9B26B',cat:'friend'},
+  {text:'친구 부탁을 거절하지 못해요',color:'#B8A4D4',cat:'friend'},
+  {text:'친구가 내 비밀을 퍼트렸어요',color:'#C76B5E',cat:'friend'},
+  {text:'나이 들수록 친구가 줄어들어요',color:'#7AA0A3',cat:'friend'},
+  {text:'새 환경에서 친구를 못 사귀겠어요',color:'#9BAE82',cat:'friend'},
+  {text:'내향적이라 친구 사귀기가 어려워요',color:'#D9B26B',cat:'friend'},
+  {text:'친구가 갑자기 차가워졌어요',color:'#B8A4D4',cat:'friend'},
+  {text:'오랜 친구와 가치관이 달라졌어요',color:'#C76B5E',cat:'friend'},
+  {text:'친구가 내 연인을 싫어해요',color:'#7AA0A3',cat:'friend'},
+  {text:'사회에서 진짜 친구를 찾기 어려워요',color:'#9BAE82',cat:'friend'},
+  {text:'친구에게 질투가 느껴져요',color:'#D9B26B',cat:'friend'},
+  {text:'친구가 나보다 훨씬 잘 돼서 부담스러워요',color:'#B8A4D4',cat:'friend'},
+  {text:'친구한테 상처받았는데 말을 못 하겠어요',color:'#C76B5E',cat:'friend'},
+  {text:'SNS 친구와 실제 친구가 달라요',color:'#7AA0A3',cat:'friend'},
+  {text:'깊은 대화를 나눌 친구가 없어요',color:'#9BAE82',cat:'friend'},
+  {text:'친구와 돈 문제가 생겼어요',color:'#D9B26B',cat:'friend'},
+  {text:'일하는 친구와 공백기인 친구 사이에서 대화가 안 맞아요',color:'#B8A4D4',cat:'friend'},
+  {text:'직장 동료와 친구가 되고 싶어요',color:'#C76B5E',cat:'friend'},
+  {text:'친구가 항상 늦어요',color:'#7AA0A3',cat:'friend'},
+  {text:'내가 먼저 연락을 해야 해요',color:'#9BAE82',cat:'friend'},
+  {text:'친구가 부정적인 에너지를 많이 줘요',color:'#D9B26B',cat:'friend'},
+  {text:'학창 시절 친구들과 멀어졌어요',color:'#B8A4D4',cat:'friend'},
+  {text:'온라인으로만 아는 사람이 친구인가요?',color:'#C76B5E',cat:'friend'},
+  {text:'친구가 내 말을 잘 안 들어줘요',color:'#7AA0A3',cat:'friend'},
+  {text:'같은 말을 반복해서 하는 친구가 지쳐요',color:'#9BAE82',cat:'friend'},
+  {text:'친구의 선택이 마음에 안 들어요',color:'#D9B26B',cat:'friend'},
+  {text:'친구 그룹 안에서 역할이 없는 것 같아요',color:'#B8A4D4',cat:'friend'},
+  {text:'오래된 친구인데 함께 있으면 불편해요',color:'#C76B5E',cat:'friend'},
+  {text:'친구에게 부탁했는데 거절당했어요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구가 계속 같은 문제로 힘들어해요',color:'#9BAE82',cat:'friend'},
+  {text:'그냥 혼자가 편해졌어요',color:'#D9B26B',cat:'friend'},
+  {text:'친구가 만날 때마다 시비를 걸어요',color:'#B8A4D4',cat:'friend'},
+  {text:'직장이 바뀌면서 자연스럽게 멀어진 친구가 있어요',color:'#C76B5E',cat:'friend'},
+  {text:'친구 앞에서 나를 꾸미게 돼요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구에게 솔직한 말을 하기 어려워요',color:'#9BAE82',cat:'friend'},
+  {text:'같은 그룹 친구들이 나 빼고 가까워진 것 같아요',color:'#D9B26B',cat:'friend'},
+  {text:'친구 자랑이 너무 많아 지쳐요',color:'#B8A4D4',cat:'friend'},
+  {text:'내가 너무 의존하는 것 같아요',color:'#C76B5E',cat:'friend'},
+  {text:'친구가 자꾸 내 연애에 간섭해요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구의 부탁이 무리한 것 같아요',color:'#9BAE82',cat:'friend'},
+  {text:'친구가 내 상황을 이해 못 해요',color:'#D9B26B',cat:'friend'},
+  {text:'사귀는 친구가 없어요',color:'#B8A4D4',cat:'friend'},
+  {text:'친구에게 무시당하는 느낌이 들어요',color:'#C76B5E',cat:'friend'},
+  {text:'유독 한 친구랑 있으면 피곤해요',color:'#7AA0A3',cat:'friend'},
+  {text:'어울리는 그룹이 없는 것 같아요',color:'#9BAE82',cat:'friend'},
+  {text:'친구가 내 결정을 존중해주지 않아요',color:'#D9B26B',cat:'friend'},
+  {text:'비교하는 친구가 힘들어요',color:'#B8A4D4',cat:'friend'},
+  {text:'진심으로 좋아하는 친구가 없어요',color:'#C76B5E',cat:'friend'},
+  {text:'친구와 함께하면 항상 내가 맞춰야 해요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구가 감사 표현을 안 해요',color:'#9BAE82',cat:'friend'},
+  {text:'친구 눈치를 너무 봐요',color:'#D9B26B',cat:'friend'},
+  {text:'친구들끼리 갈등에 내가 끼어들게 됐어요',color:'#B8A4D4',cat:'friend'},
+  {text:'인기 있는 친구 옆에 있으면 주눅이 들어요',color:'#C76B5E',cat:'friend'},
+  {text:'친구와 함께 있어도 외로워요',color:'#7AA0A3',cat:'friend'},
+  {text:'나를 이용하는 친구인 것 같아요',color:'#9BAE82',cat:'friend'},
+  {text:'그룹 내에서 투명인간인 것 같아요',color:'#D9B26B',cat:'friend'},
+  {text:'혼자 밥 먹는 게 창피해요',color:'#B8A4D4',cat:'friend'},
+  {text:'외향적인 척을 해야 해요',color:'#C76B5E',cat:'friend'},
+  {text:'오랫동안 연락 안 했던 친구에게 연락해도 될까요?',color:'#7AA0A3',cat:'friend'},
+  {text:'친구와 여행 가서 싸웠어요',color:'#9BAE82',cat:'friend'},
+  {text:'친구의 연애에 너무 많이 의존당해요',color:'#D9B26B',cat:'friend'},
+  {text:'친구를 잃을까봐 무서워 참고 있어요',color:'#B8A4D4',cat:'friend'},
+  {text:'진짜 내 모습을 보여줄 수 있는 친구가 없어요',color:'#C76B5E',cat:'friend'},
+  {text:'친구가 항상 힘든 얘기만 해서 지쳐요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구가 내 성공을 진심으로 기뻐해주지 않아요',color:'#9BAE82',cat:'friend'},
+  {text:'연락이 끊긴 친구가 그리워요',color:'#D9B26B',cat:'friend'},
+  {text:'내가 많이 달라진 것 같아요',color:'#B8A4D4',cat:'friend'},
+  {text:'친구가 나를 당연하게 여기는 것 같아요',color:'#C76B5E',cat:'friend'},
+  {text:'인연을 끊어야 할 것 같은데 망설여져요',color:'#7AA0A3',cat:'friend'},
+  {text:'소속감이 없어요',color:'#9BAE82',cat:'friend'},
+  {text:'평생 같이 할 친구가 없는 것 같아요',color:'#D9B26B',cat:'friend'},
+  {text:'친구 생일을 잊었어요',color:'#B8A4D4',cat:'friend'},
+  {text:'모임 자리에서 혼자 분위기를 못 읽는 것 같아요',color:'#C76B5E',cat:'friend'},
+  {text:'친구가 자꾸 비교해요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구들이 저에 대해 어떻게 생각할까요?',color:'#9BAE82',cat:'friend'},
+  {text:'친구한테 고마운 마음을 어떻게 표현해요?',color:'#D9B26B',cat:'friend'},
+  {text:'그룹 채팅방에서 혼자 다른 의견이에요',color:'#B8A4D4',cat:'friend'},
+  {text:'친구와 정치·사회 이야기하다 틀어졌어요',color:'#C76B5E',cat:'friend'},
+  {text:'친구의 연락에 답장하기 싫어요',color:'#7AA0A3',cat:'friend'},
+  {text:'친구가 나를 과소평가하는 것 같아요',color:'#9BAE82',cat:'friend'},
+  {text:'친구 결혼식에 가기 싫어요',color:'#D9B26B',cat:'friend'},
+  {text:'모임에서 말수가 없어 어색해요',color:'#B8A4D4',cat:'friend'},
+  {text:'좋은 사람인데 친해지기가 어려워요',color:'#C76B5E',cat:'friend'},
+  // ── 인생 시뮬 (100) ──
   {text:'30살에 새 커리어 시작해도 될까요?',color:'#9BAE82',cat:'life'},
   {text:'퇴사하고 1년 쉬어도 될까요?',color:'#D9B26B',cat:'life'},
   {text:'해외로 떠나고 싶어요',color:'#B8A4D4',cat:'life'},
-  {text:'꿈을 쫓아야 할지 안정을 택할지',color:'#D9B26B',cat:'life'},
-  {text:'사업을 시작해볼까요?',color:'#B8A4D4',cat:'life'},
+  {text:'꿈을 쫓아야 할지 안정을 택할지',color:'#7AA0A3',cat:'life'},
+  {text:'사업을 시작해볼까요?',color:'#C76B5E',cat:'life'},
   {text:'대학원 갈까요, 취업할까요?',color:'#9BAE82',cat:'life'},
-  {text:'지금 도시를 떠나도 될까요?',color:'#B8A4D4',cat:'life'},
-  {text:'결혼을 미뤄도 될까요?',color:'#9BAE82',cat:'life'},
-  {text:'내가 너무 평범한 것 같아요',color:'#D9B26B',cat:'life'},
-  {text:'포기하면 후회할까요?',color:'#D9B26B',cat:'life'},
-  {text:'ARA, 너는 왜 그렇게 단호해?',color:'#C76B5E',cat:'story'},
-  {text:'LUX, 빛은 무엇을 보여줘?',color:'#D9B26B',cat:'story'},
-  {text:'EUR, 너는 어떻게 그렇게 차분해?',color:'#7AA0A3',cat:'story'},
-  {text:'KIN, 변화가 두렵지 않아?',color:'#B8A4D4',cat:'story'},
-  {text:'ATP, 본질은 어떻게 찾아?',color:'#9BAE82',cat:'story'},
+  {text:'지금 도시를 떠나도 될까요?',color:'#D9B26B',cat:'life'},
+  {text:'결혼을 미뤄도 될까요?',color:'#B8A4D4',cat:'life'},
+  {text:'내가 너무 평범한 것 같아요',color:'#7AA0A3',cat:'life'},
+  {text:'포기하면 후회할까요?',color:'#C76B5E',cat:'life'},
+  {text:'이 직장을 계속 다녀야 할까요?',color:'#9BAE82',cat:'life'},
+  {text:'창업 아이디어가 있는데 시작할 용기가 없어요',color:'#D9B26B',cat:'life'},
+  {text:'부업을 해야 할 것 같아요',color:'#B8A4D4',cat:'life'},
+  {text:'집을 살까요 계속 월세로 살까요?',color:'#7AA0A3',cat:'life'},
+  {text:'번아웃이 온 것 같아요',color:'#C76B5E',cat:'life'},
+  {text:'쉬어야 할 것 같은데 죄책감이 들어요',color:'#9BAE82',cat:'life'},
+  {text:'꿈이 있는데 주변에서 반대해요',color:'#D9B26B',cat:'life'},
+  {text:'어떤 삶이 성공한 삶인지 모르겠어요',color:'#B8A4D4',cat:'life'},
+  {text:'매일 똑같은 루틴이 지겨워요',color:'#7AA0A3',cat:'life'},
+  {text:'워라밸이 맞지 않아요',color:'#C76B5E',cat:'life'},
+  {text:'취업이 안 돼요',color:'#9BAE82',cat:'life'},
+  {text:'자기계발을 시작해야 하는데 무기력해요',color:'#D9B26B',cat:'life'},
+  {text:'건강을 챙겨야 하는데 의지가 없어요',color:'#B8A4D4',cat:'life'},
+  {text:'혼자 사는 게 외로워요',color:'#7AA0A3',cat:'life'},
+  {text:'부모님께 손 벌리는 게 미안해요',color:'#C76B5E',cat:'life'},
+  {text:'생활비가 너무 빠듯해요',color:'#9BAE82',cat:'life'},
+  {text:'내가 잘 하는 게 없는 것 같아요',color:'#D9B26B',cat:'life'},
+  {text:'미래를 위해 현재를 포기해야 할까요?',color:'#B8A4D4',cat:'life'},
+  {text:'지금 하는 일이 의미있는지 모르겠어요',color:'#7AA0A3',cat:'life'},
+  {text:'루틴을 만들고 싶은데 작심삼일이에요',color:'#C76B5E',cat:'life'},
+  {text:'비교하는 버릇을 고치고 싶어요',color:'#9BAE82',cat:'life'},
+  {text:'나 자신을 사랑하는 방법을 모르겠어요',color:'#D9B26B',cat:'life'},
+  {text:'인생에 방향성이 없어요',color:'#B8A4D4',cat:'life'},
+  {text:'좋아하는 일로 먹고살 수 있을까요?',color:'#7AA0A3',cat:'life'},
+  {text:'매 순간 선택이 두려워요',color:'#C76B5E',cat:'life'},
+  {text:'내 삶을 내가 통제 못 하는 것 같아요',color:'#9BAE82',cat:'life'},
+  {text:'주변 시선이 너무 신경 쓰여요',color:'#D9B26B',cat:'life'},
+  {text:'실패가 너무 두려워요',color:'#B8A4D4',cat:'life'},
+  {text:'소비 패턴을 고치고 싶어요',color:'#7AA0A3',cat:'life'},
+  {text:'운동을 꾸준히 하고 싶어요',color:'#C76B5E',cat:'life'},
+  {text:'핸드폰을 너무 많이 봐요',color:'#9BAE82',cat:'life'},
+  {text:'목표를 세워도 흐지부지돼요',color:'#D9B26B',cat:'life'},
+  {text:'긍정적이 되고 싶어요',color:'#B8A4D4',cat:'life'},
+  {text:'멘탈을 강하게 하고 싶어요',color:'#7AA0A3',cat:'life'},
+  {text:'나만의 취미를 찾고 싶어요',color:'#C76B5E',cat:'life'},
+  {text:'나를 표현하는 법을 모르겠어요',color:'#9BAE82',cat:'life'},
+  {text:'매일이 무의미하게 느껴져요',color:'#D9B26B',cat:'life'},
+  {text:'작은 것에도 행복해지고 싶어요',color:'#B8A4D4',cat:'life'},
+  {text:'삶의 균형을 찾고 싶어요',color:'#7AA0A3',cat:'life'},
+  {text:'재테크를 시작해야 할 것 같아요',color:'#C76B5E',cat:'life'},
+  {text:'이직을 해야 할까요?',color:'#9BAE82',cat:'life'},
+  {text:'현재에 만족해도 될까요?',color:'#D9B26B',cat:'life'},
+  {text:'더 배워야 할 것 같아요',color:'#B8A4D4',cat:'life'},
+  {text:'일에서 보람을 찾을 수 없어요',color:'#7AA0A3',cat:'life'},
+  {text:'내 선택들을 후회해요',color:'#C76B5E',cat:'life'},
+  {text:'잘 하는 사람이 너무 많아요',color:'#9BAE82',cat:'life'},
+  {text:'SNS를 그만해야 할 것 같아요',color:'#D9B26B',cat:'life'},
+  {text:'마음의 평화를 찾고 싶어요',color:'#B8A4D4',cat:'life'},
+  {text:'자존감을 높이고 싶어요',color:'#7AA0A3',cat:'life'},
+  {text:'노력해도 결과가 없어요',color:'#C76B5E',cat:'life'},
+  {text:'늦은 나이에 새로 시작해도 될까요?',color:'#9BAE82',cat:'life'},
+  {text:'안전한 길과 도전하는 길 중 무엇을 택해야 할까요?',color:'#D9B26B',cat:'life'},
+  {text:'나의 과거가 나를 붙잡아요',color:'#B8A4D4',cat:'life'},
+  {text:'걱정이 너무 많아요',color:'#7AA0A3',cat:'life'},
+  {text:'완벽하지 않아도 괜찮을까요?',color:'#C76B5E',cat:'life'},
+  {text:'어른이 된 게 느껴지지 않아요',color:'#9BAE82',cat:'life'},
+  {text:'더 나은 사람이 되고 싶어요',color:'#D9B26B',cat:'life'},
+  {text:'과거를 반성하는데 앞으로 나아가지 못해요',color:'#B8A4D4',cat:'life'},
+  {text:'변화가 두려워요',color:'#7AA0A3',cat:'life'},
+  {text:'하루가 너무 빨리 지나가요',color:'#C76B5E',cat:'life'},
+  {text:'무기력증에서 벗어나고 싶어요',color:'#9BAE82',cat:'life'},
+  {text:'지금 내 모습이 마음에 안 들어요',color:'#D9B26B',cat:'life'},
+  {text:'정말 원하는 게 뭔지 모르겠어요',color:'#B8A4D4',cat:'life'},
+  {text:'두 번째 기회가 있을까요?',color:'#7AA0A3',cat:'life'},
+  {text:'흘러가는 시간이 아까워요',color:'#C76B5E',cat:'life'},
+  {text:'내일이 기대되지 않아요',color:'#9BAE82',cat:'life'},
+  {text:'무언가를 시작하면 끝을 못 내요',color:'#D9B26B',cat:'life'},
+  {text:'항상 지치는 이유가 뭘까요?',color:'#B8A4D4',cat:'life'},
+  {text:'나를 바꾸려고 노력했는데 안 돼요',color:'#7AA0A3',cat:'life'},
+  {text:'진정한 행복이 뭔지 모르겠어요',color:'#C76B5E',cat:'life'},
+  {text:'돈을 모으고 싶은데 방법을 모르겠어요',color:'#9BAE82',cat:'life'},
+  {text:'스펙이 부족한 것 같아요',color:'#D9B26B',cat:'life'},
+  {text:'나의 강점을 모르겠어요',color:'#B8A4D4',cat:'life'},
+  {text:'아무도 몰랐으면 하는 꿈이 있어요',color:'#7AA0A3',cat:'life'},
+  {text:'지금 이 순간을 즐기는 법을 모르겠어요',color:'#C76B5E',cat:'life'},
+  {text:'나이에 맞게 살고 있는 건지 모르겠어요',color:'#9BAE82',cat:'life'},
+  {text:'이 나이에 이것도 모르다니 창피해요',color:'#D9B26B',cat:'life'},
+  {text:'퇴사 후 공백기 어떻게 설명해요?',color:'#B8A4D4',cat:'life'},
+  {text:'나는 평범한 사람인 건가요?',color:'#7AA0A3',cat:'life'},
+  {text:'아무도 내 가능성을 믿지 않는 것 같아요',color:'#C76B5E',cat:'life'},
+  {text:'좋아하는 것과 잘 하는 것이 달라요',color:'#9BAE82',cat:'life'},
+  {text:'결혼하기 전에 해야 할 게 너무 많아요',color:'#D9B26B',cat:'life'},
+  {text:'나한테 투자해도 될까요?',color:'#B8A4D4',cat:'life'},
+  {text:'월요일이 두렵지 않은 삶이 가능할까요?',color:'#7AA0A3',cat:'life'},
+  {text:'내 일이 세상에 도움이 되는 건지 모르겠어요',color:'#C76B5E',cat:'life'},
+  // ── 우리의 스토리 (100) ──
+  {text:'ARA, 너는 왜 그렇게 단호해?',color:'#D9B26B',cat:'story'},
+  {text:'LUX, 빛은 무엇을 보여줘?',color:'#B8A4D4',cat:'story'},
+  {text:'EUR, 너는 어떻게 그렇게 차분해?',color:'#C76B5E',cat:'story'},
+  {text:'KIN, 변화가 두렵지 않아?',color:'#9BAE82',cat:'story'},
+  {text:'ATP, 본질은 어떻게 찾아?',color:'#7AA0A3',cat:'story'},
   {text:'VenuX 5명이 함께 있을 때 어떤 느낌이야?',color:'#D9B26B',cat:'story'},
-  {text:'너희가 가장 자주 싸우는 멤버는?',color:'#C76B5E',cat:'story'},
-  {text:'팬들에게 한마디 해줘',color:'#D9B26B',cat:'story'},
-  {text:'다음 컴백은 언제야?',color:'#B8A4D4',cat:'story'},
-  {text:'너희 그룹의 비밀이 있다면?',color:'#9BAE82',cat:'story'},
+  {text:'너희가 가장 자주 싸우는 멤버는?',color:'#B8A4D4',cat:'story'},
+  {text:'팬들에게 한마디 해줘',color:'#C76B5E',cat:'story'},
+  {text:'다음 컴백은 언제야?',color:'#9BAE82',cat:'story'},
+  {text:'너희 그룹의 비밀이 있다면?',color:'#7AA0A3',cat:'story'},
+  {text:'ARA, 제일 힘들었던 순간이 언제야?',color:'#D9B26B',cat:'story'},
+  {text:'LUX, 가장 아름답다고 느끼는 순간은?',color:'#B8A4D4',cat:'story'},
+  {text:'EUR, 울고 싶을 때 어떻게 해?',color:'#C76B5E',cat:'story'},
+  {text:'KIN, 가장 신났던 순간이 언제야?',color:'#9BAE82',cat:'story'},
+  {text:'ATP, 가장 중요한 게 뭐야?',color:'#7AA0A3',cat:'story'},
+  {text:'VenuX 중에 제일 먼저 일어나는 멤버가 누구야?',color:'#D9B26B',cat:'story'},
+  {text:'VenuX 중에 가장 잠을 많이 자는 멤버가 누구야?',color:'#B8A4D4',cat:'story'},
+  {text:'연습실에서 무슨 음악 틀어?',color:'#C76B5E',cat:'story'},
+  {text:'데뷔 전에 가장 힘들었던 게 뭐야?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 팬들한테 솔직하게 하고 싶은 말 있어?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 촬영할 때 가장 좋아하는 컨셉이 뭐야?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 마음이 힘들 때 어디 가?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 제일 좋아하는 장난은?',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 새벽에 혼자 뭐 해?',color:'#9BAE82',cat:'story'},
+  {text:'VenuX가 처음 5명이 된 날 기억해?',color:'#7AA0A3',cat:'story'},
+  {text:'멤버 중에 누가 가장 패션 고집이 강해?',color:'#D9B26B',cat:'story'},
+  {text:'멤버 중에 누가 가장 주도권을 잡아?',color:'#B8A4D4',cat:'story'},
+  {text:'가장 많이 싸운 멤버가 누구야?',color:'#C76B5E',cat:'story'},
+  {text:'가장 가깝게 지내는 멤버가 누구야?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 단호할 때와 부드러울 때 어떻게 달라?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 빛이 꺼질 때도 있어?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 감정이 너무 많아서 힘들 때는 없어?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 변화가 무섭지 않아?',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 본질만 보다 보면 외롭지 않아?',color:'#9BAE82',cat:'story'},
+  {text:'VenuX 이름에 담긴 뜻을 직접 설명해줘',color:'#7AA0A3',cat:'story'},
+  {text:'다음 앨범 컨셉 힌트 줄 수 있어?',color:'#D9B26B',cat:'story'},
+  {text:'제일 좋아하는 노래가 뭐야?',color:'#B8A4D4',cat:'story'},
+  {text:'무대 위에서 무슨 생각 해?',color:'#C76B5E',cat:'story'},
+  {text:'팬들이 있어서 힘 얻는 순간이 있어?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 가장 힘이 되는 말이 뭐야?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 슬럼프가 온 적 있어?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 평화로운 하루란 어떤 하루야?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 에너지가 바닥날 때는?',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 질문의 본질을 찾을 때 어떤 과정이야?',color:'#9BAE82',cat:'story'},
+  {text:'멤버 중에 요리 제일 못 하는 사람이 누구야?',color:'#7AA0A3',cat:'story'},
+  {text:'여행 가면 어떤 멤버가 제일 짐이 많아?',color:'#D9B26B',cat:'story'},
+  {text:'팬들 중에 기억에 남는 편지가 있어?',color:'#B8A4D4',cat:'story'},
+  {text:'가장 최근에 같이 웃었던 일이 뭐야?',color:'#C76B5E',cat:'story'},
+  {text:'VenuX가 없었다면 어떻게 됐을 것 같아?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 혼자 있는 시간에 뭐 해?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 밤하늘 보면 어떤 생각이 들어?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 지금 이 순간 기분이 어때?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 멤버들이 잠들었을 때 혼자 뭐 해?',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 대화할 때 가장 중요하게 생각하는 게 뭐야?',color:'#9BAE82',cat:'story'},
+  {text:'같이 있을 때 가장 자주 하는 게임이 뭐야?',color:'#7AA0A3',cat:'story'},
+  {text:'합숙할 때 제일 힘든 점이 뭐야?',color:'#D9B26B',cat:'story'},
+  {text:'서로한테 고마운 점이 있다면?',color:'#B8A4D4',cat:'story'},
+  {text:'가장 기억에 남는 공연이 어디야?',color:'#C76B5E',cat:'story'},
+  {text:'VenuX의 색깔이 뭐라고 생각해?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 포기하고 싶었던 적 있어?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 진짜 아름다움이 뭐라고 생각해?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 눈물이 나는 게 약한 건 아니잖아?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 슬픈 날은 어떻게 보내?',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 생각이 너무 많아질 때 어떻게 해?',color:'#9BAE82',cat:'story'},
+  {text:'팬들이 힘들어할 때 어떤 말을 해주고 싶어?',color:'#7AA0A3',cat:'story'},
+  {text:'제일 좋아하는 팬 이벤트가 뭐야?',color:'#D9B26B',cat:'story'},
+  {text:'무대 의상 중 가장 기억에 남는 게 있어?',color:'#B8A4D4',cat:'story'},
+  {text:'연습생 시절 가장 힘들었던 게 뭐야?',color:'#C76B5E',cat:'story'},
+  {text:'VenuX 중에 밖에 나가면 제일 눈에 띄는 멤버가 누구야?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 나한테 하고 싶은 말 있어?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 오늘 어땠어?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 꽃이랑 물이랑 닮은 거 알아?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 나 요즘 좀 기운이 없어…',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 지금 제일 필요한 게 뭐야?',color:'#9BAE82',cat:'story'},
+  {text:'VenuX의 다음 목표가 뭐야?',color:'#7AA0A3',cat:'story'},
+  {text:'데뷔 후 가장 달라진 점이 뭐야?',color:'#D9B26B',cat:'story'},
+  {text:'팬들한테 숨긴 에피소드가 있어?',color:'#B8A4D4',cat:'story'},
+  {text:'같이 밥 먹으면 누가 제일 많이 먹어?',color:'#C76B5E',cat:'story'},
+  {text:'어떤 팬을 보면 가장 마음이 따뜻해져?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 친구한테는 어떤 사람이야?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 빛 말고 어둠도 사랑해?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 꿈에서 뭐 자주 봐?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 최애 음식이 뭐야?',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 가장 본질적인 질문이 뭐라고 생각해?',color:'#9BAE82',cat:'story'},
+  {text:'멤버들이랑 가장 의미 있게 보낸 시간이 뭐야?',color:'#7AA0A3',cat:'story'},
+  {text:'팬들과 함께하고 싶은 게 있어?',color:'#D9B26B',cat:'story'},
+  {text:'VenuX로 이루고 싶은 꿈이 뭐야?',color:'#B8A4D4',cat:'story'},
+  {text:'나한테 노래 한 소절 불러줄 수 있어?',color:'#C76B5E',cat:'story'},
+  {text:'내가 힘들 때 옆에 있어줄 수 있어?',color:'#9BAE82',cat:'story'},
+  {text:'ARA, 약한 모습 보인 적 있어?',color:'#7AA0A3',cat:'story'},
+  {text:'LUX, 오늘 뭐 하고 싶어?',color:'#D9B26B',cat:'story'},
+  {text:'EUR, 새벽에 일어나면 어떤 기분이야?',color:'#B8A4D4',cat:'story'},
+  {text:'KIN, 멤버들 중에 가장 다른 사람이 누구야?',color:'#C76B5E',cat:'story'},
+  {text:'ATP, 지금 나한테 하나만 말해줘',color:'#9BAE82',cat:'story'},
+  {text:'VenuX 5명이 가장 행복한 순간이 언제야?',color:'#7AA0A3',cat:'story'},
+  {text:'뮤직비디오 찍을 때 NG 많이 났어?',color:'#D9B26B',cat:'story'},
+  {text:'서로한테 처음 한 농담이 뭐야?',color:'#B8A4D4',cat:'story'},
+  {text:'마지막 콘서트 끝났을 때 어떤 기분이야?',color:'#C76B5E',cat:'story'},
+  {text:'나를 기억해줄 거야?',color:'#9BAE82',cat:'story'},
+  // ── 전체 공통 (10) ──
   {text:'엄마랑 또 싸웠어요',color:'#C76B5E',cat:'all'},
   {text:'이유 없이 눈물이 나요',color:'#7AA0A3',cat:'all'},
   {text:'아무도 내 마음 몰라줘요',color:'#7AA0A3',cat:'all'},
@@ -2111,16 +2581,36 @@ let photoUserFile = null;
 // ============================================================
 // SCREENS
 // ============================================================
-function showScreen(id) {
+let _navStack = ['screen-landing'];
+function showScreen(id, _push) {
   document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
   document.getElementById(id).scrollTop = 0;
+  if (_push !== false && _navStack[_navStack.length-1] !== id) _navStack.push(id);
+  _syncBackButtons();
+}
+function goBack() {
+  if (_navStack.length > 1) _navStack.pop();
+  const prev = _navStack[_navStack.length-1];
+  showScreen(prev, false);
+  document.querySelectorAll('.tab-bar-item').forEach(t =>
+    t.classList.toggle('active', t.dataset.tab === prev)
+  );
+  if (prev === 'screen-landing') { resetFocusedMember(); }
+}
+function _syncBackButtons() {
+  const onHome = _navStack[_navStack.length-1] === 'screen-landing';
+  document.querySelectorAll('.back-btn').forEach(b =>
+    b.style.visibility = onHome ? 'hidden' : 'visible'
+  );
 }
 function goToLanding() {
-  showScreen('screen-landing');
+  _navStack = ['screen-landing'];
+  showScreen('screen-landing', false);
   document.getElementById('questionInput').value = '';
   updateCharCount();
   resetFocusedMember();
+  _syncBackButtons();
 }
 
 // ============================================================
@@ -2165,18 +2655,13 @@ function shuffle(arr) {
   return a;
 }
 
-function pick3Questions() {
+function pick5Questions() {
   const pool = getCurrentPool();
   const shuffled = shuffle(pool);
-  const picked = [];
-  const usedColors = new Set();
-  for (const q of shuffled) {
-    if (picked.length >= 3) break;
-    picked.push(q);
-    usedColors.add(q.color);
-  }
-  return picked;
+  return shuffled.slice(0, 5);
 }
+// legacy alias
+function pick3Questions() { return pick5Questions(); }
 
 function renderCards(questions, animate = true) {
   const container = document.getElementById('examplesCards');
@@ -2203,7 +2688,7 @@ function rotateExamples(force = false) {
     c.classList.add('fade-out');
   });
   setTimeout(() => {
-    renderCards(pick3Questions(), true);
+    renderCards(pick5Questions(), true);
   }, 300);
 }
 
@@ -2372,6 +2857,16 @@ function openProfileModal(key) {
   document.getElementById('profileModal').classList.add('show');
 }
 function closeProfileModal() { document.getElementById('profileModal').classList.remove('show'); }
+function openPhotoLightbox(src, alt) {
+  const lb = document.getElementById('photoLightbox');
+  const img = document.getElementById('photoLightboxImg');
+  img.src = src;
+  img.alt = alt || '';
+  lb.classList.add('open');
+}
+function closePhotoLightbox() {
+  document.getElementById('photoLightbox').classList.remove('open');
+}
 let focusedMember = null;
 function focusQuestion(name, key) {
   focusedMember = key || null;
@@ -2802,6 +3297,7 @@ function selectPhotoMember(key) {
   });
   updatePhotoMemberPreview();
   checkPhotoReady();
+  showPhotoAccordion();
 }
 
 function updatePhotoMemberPreview() {
@@ -2956,6 +3452,274 @@ function resizeImageToSquare(imgSource) {
   });
 }
 
+// ── 의상/배경 선택 ──────────────────────────────────────
+let selectedOutfitCat = 0, selectedOutfitItem = 0;
+let selectedBgCat = 0,     selectedBgItem = 0;
+
+const OUTFIT_CATEGORIES = [
+  { name:'캐주얼', items:[
+    { label:'기본',       prompt:'' },
+    { label:'오버핏 후드', prompt:'wearing oversized hoodie and baggy jeans, Korean streetwear style' },
+    { label:'데님 온 데님', prompt:'wearing denim jacket over denim jeans, Korean street style' },
+    { label:'Y2K 룩',     prompt:'wearing Y2K inspired outfit — low-rise jeans, crop top, butterfly accessories' },
+    { label:'스트릿',     prompt:'wearing Korean streetwear — cargo pants, graphic tee, chunky sneakers' },
+    { label:'빈티지',     prompt:'wearing vintage-aesthetic casual outfit, thrifted layered style' },
+    { label:'컬러 가디건', prompt:'wearing colorful pastel knit cardigan, cute aesthetic' },
+    { label:'테니스룩',   prompt:'wearing tennis skirt and polo shirt, preppy sporty style' },
+    { label:'린넨 셋업',  prompt:'wearing linen co-ord set, breezy summer casual look' },
+  ]},
+  { name:'무대', items:[
+    { label:'K-pop 무대',  prompt:'wearing sparkling K-pop stage performance outfit with sequins and glitter' },
+    { label:'콘서트',      prompt:'wearing bold dynamic concert tour performance costume, dramatic silhouette' },
+    { label:'홀로그램',    prompt:'wearing holographic iridescent stage costume, futuristic glow' },
+    { label:'레더',        prompt:'wearing black leather performance outfit, edgy rock concept' },
+    { label:'크리스탈',    prompt:'wearing crystal-embellished stage gown, ultra-glamorous' },
+    { label:'네온',        prompt:'wearing neon-colored performance outfit, glowing electric concept' },
+    { label:'화이트 퍼포',  prompt:'wearing all-white ethereal performance outfit, angelic concept' },
+    { label:'블랙 퍼포',   prompt:'wearing sleek all-black performance outfit, powerful concept' },
+    { label:'시상식 가운', prompt:'wearing awards ceremony red carpet gown, stunning formal elegance' },
+  ]},
+  { name:'로맨틱', items:[
+    { label:'파스텔 원피스', prompt:'wearing soft pastel sundress, sweet and feminine' },
+    { label:'플로럴',       prompt:'wearing floral print dress, romantic spring date style' },
+    { label:'리본 드레스',  prompt:'wearing ribbon-detail dress, cute girly aesthetic' },
+    { label:'쉬폰 블라우스', prompt:'wearing chiffon blouse and wide-leg pants, elegant and airy' },
+    { label:'체크 코트',    prompt:'wearing plaid check coat over knit, autumn date look' },
+    { label:'새틴 드레스',  prompt:'wearing satin slip dress, sophisticated evening style' },
+    { label:'니트 원피스',  prompt:'wearing cozy knit mini dress, warm soft tones' },
+    { label:'레이스',       prompt:'wearing delicate lace dress, romantic feminine concept' },
+  ]},
+  { name:'교복/유니폼', items:[
+    { label:'교복',         prompt:'wearing Korean high school uniform, white blouse and pleated skirt' },
+    { label:'하복 교복',    prompt:'wearing summer school uniform, short-sleeve blouse and light skirt' },
+    { label:'체육복',       prompt:'wearing Korean school PE gym uniform, sporty and casual' },
+    { label:'교복+후드',    prompt:'wearing school uniform with oversized hoodie layered over, casual rebel style' },
+    { label:'승무원',       prompt:'wearing airline flight attendant uniform, elegant navy and white' },
+    { label:'카페 알바',    prompt:'wearing cute cafe barista outfit with apron, casual work style' },
+    { label:'간호사복',     prompt:'wearing neat nurse uniform, clean white and navy style' },
+  ]},
+  { name:'포멀', items:[
+    { label:'오피스 블레이저', prompt:'wearing tailored blazer and trousers, sharp office professional' },
+    { label:'트위드 셋업',  prompt:'wearing Chanel-inspired tweed suit set, classic and elegant' },
+    { label:'슈트 드레스',  prompt:'wearing fitted suit dress, powerful and chic modern woman' },
+    { label:'비즈니스 캐주얼', prompt:'wearing business casual — smart blouse and neat trousers' },
+    { label:'맥시 드레스',  prompt:'wearing elegant floor-length maxi dress, formal occasion style' },
+    { label:'점프수트',     prompt:'wearing tailored jumpsuit, modern sophisticated one-piece' },
+    { label:'레드 드레스',  prompt:'wearing bold red formal dress, confident statement look' },
+    { label:'LBD',          prompt:'wearing classic little black dress, timeless chic elegance' },
+  ]},
+  { name:'특별/시즌', items:[
+    { label:'한복',         prompt:'wearing traditional Korean hanbok, elegant colorful silk fabric' },
+    { label:'웨딩 드레스',  prompt:'wearing white bridal wedding gown, romantic lace detail' },
+    { label:'파티 드레스',  prompt:'wearing festive glittery party dress, celebratory and fun' },
+    { label:'크리스마스',   prompt:'wearing Christmas holiday outfit, red velvet and white fur trim' },
+    { label:'핼러윈',       prompt:'wearing Halloween costume, spooky-cute concept with accessories' },
+    { label:'여름 비키니',  prompt:'wearing stylish summer bikini with beach sarong, vacation look' },
+    { label:'스키복',       prompt:'wearing colorful winter ski outfit, puffer jacket and goggles' },
+    { label:'졸업 가운',    prompt:'wearing graduation gown and cap, achievement moment' },
+    { label:'무도회',       prompt:'wearing princess-style ball gown for prom, fairytale concept' },
+  ]},
+];
+
+const BG_CATEGORIES = [
+  { name:'일상', items:[
+    { label:'포토부스',    prompt:'' },
+    { label:'카페',        prompt:'background: cozy Korean cafe interior, warm amber lighting, wooden tables' },
+    { label:'편의점',      prompt:'background: Korean convenience store at night, glowing signs, urban glow' },
+    { label:'지하철',      prompt:'background: Seoul subway interior, handrails and seats, city life' },
+    { label:'버스 창가',   prompt:'background: bus window seat, blurry city scenery passing outside' },
+    { label:'골목',        prompt:'background: narrow Korean alley, evening streetlamps, warm shadows' },
+    { label:'홍대',        prompt:'background: Hongdae street, colorful murals, lively night crowd' },
+    { label:'교실',        prompt:'background: bright Korean school classroom, afternoon window light' },
+    { label:'도서관',      prompt:'background: library interior, tall bookshelves, quiet study atmosphere' },
+    { label:'한옥 마당',   prompt:'background: traditional Korean hanok courtyard, paper lanterns and stone path' },
+  ]},
+  { name:'자연/여행', items:[
+    { label:'벚꽃',        prompt:'background: cherry blossom lined street, soft pink petals gently falling' },
+    { label:'단풍',        prompt:'background: autumn maple forest, vibrant red and orange leaves' },
+    { label:'해변 노을',   prompt:'background: beach at golden sunset, warm glow, gentle waves' },
+    { label:'제주 바다',   prompt:'background: Jeju island coastline, turquoise water and volcanic black rocks' },
+    { label:'설원',        prompt:'background: snow-covered field, winter wonderland, crisp white landscape' },
+    { label:'숲 속',       prompt:'background: misty forest path, dappled sunlight through tall trees' },
+    { label:'유럽 거리',   prompt:'background: charming European cobblestone street, pastel buildings' },
+    { label:'도쿄',        prompt:'background: Tokyo street at night, neon signs, Shibuya crossing energy' },
+    { label:'뉴욕',        prompt:'background: New York City rooftop, iconic skyline and bridges at dusk' },
+    { label:'파리',        prompt:'background: Paris street scene, Eiffel Tower visible, romantic evening light' },
+  ]},
+  { name:'K-pop', items:[
+    { label:'콘서트 무대', prompt:'background: massive concert stage, dramatic spotlights, cheering crowd silhouettes' },
+    { label:'팬미팅',      prompt:'background: fan meeting venue, colorful fan banners and glowsticks' },
+    { label:'MV 세트',     prompt:'background: music video filming set, dramatic artistic cinematic lighting' },
+    { label:'연습실',      prompt:'background: dance practice room, floor-to-ceiling mirrors, wooden floor' },
+    { label:'음방 세트',   prompt:'background: music broadcast TV show studio set, colorful LED backdrop' },
+    { label:'레드카펫',    prompt:'background: red carpet event, photographers flashing cameras, glamorous' },
+    { label:'포토카드',    prompt:'background: K-pop photocard style, clean gradient color backdrop, soft light' },
+    { label:'쇼케이스',    prompt:'background: comeback showcase stage, press cameras, promotional banners' },
+    { label:'녹음실',      prompt:'background: recording studio, microphone, acoustic foam panels, warm light' },
+    { label:'팬사인회',    prompt:'background: fan sign event, decorated desk, album covers displayed' },
+  ]},
+  { name:'야경', items:[
+    { label:'한강 야경',   prompt:'background: Han River at night, bridge lights reflecting on dark water' },
+    { label:'강남',        prompt:'background: Gangnam district nightscape, glass towers and luxury lights' },
+    { label:'루프탑',      prompt:'background: rooftop party, Seoul city skyline behind, warm string lights' },
+    { label:'네온 골목',   prompt:'background: neon sign alley at night, vibrant pink and blue neon glow' },
+    { label:'야시장',      prompt:'background: night market food street, warm food stall lanterns, crowd' },
+    { label:'옥상',        prompt:'background: building rooftop at night, Seoul cityscape panorama below' },
+    { label:'클럽',        prompt:'background: club entrance at night, velvet rope, cool neon light spill' },
+    { label:'분수 광장',   prompt:'background: illuminated fountain plaza at night, water reflecting lights' },
+    { label:'한옥 야경',   prompt:'background: traditional hanok village at night, paper lanterns glowing warmly' },
+    { label:'드라이브',    prompt:'background: night drive, dashboard glow, bokeh streetlights through windshield' },
+  ]},
+  { name:'스튜디오', items:[
+    { label:'화이트',      prompt:'background: clean white seamless professional photography studio' },
+    { label:'그레이',      prompt:'background: neutral grey studio backdrop, soft even lighting' },
+    { label:'블랙',        prompt:'background: dramatic dark black studio, single spotlight effect' },
+    { label:'그라디언트',  prompt:'background: colorful pastel gradient backdrop, dreamy soft tones' },
+    { label:'꽃밭',        prompt:'background: endless flower field in full bloom, spring meadow fantasy' },
+    { label:'파티',        prompt:'background: party setting, gold and white balloons, colorful confetti falling' },
+    { label:'우주',        prompt:'background: outer space, stars and colorful nebula, cosmic fantasy' },
+    { label:'달빛',        prompt:'background: moonlit ethereal scene, soft silver glow, dreamy night sky' },
+    { label:'수중',        prompt:'background: underwater ocean scene, floating bubbles, dreamy blue light' },
+    { label:'천국',        prompt:'background: heavenly soft white clouds, angelic warm golden light' },
+  ]},
+];
+
+function renderOutfitCatTabs() {
+  const tabs = document.getElementById('outfitCatTabs');
+  tabs.innerHTML = OUTFIT_CATEGORIES.map((c, i) =>
+    `<div class="accord-cat-tab${i===selectedOutfitCat?' active':''}" onclick="selectOutfitCat(${i})">${c.name} <span style="opacity:0.75;font-size:10px">(${c.items.length})</span></div>`
+  ).join('');
+}
+function renderBgCatTabs() {
+  const tabs = document.getElementById('bgCatTabs');
+  tabs.innerHTML = BG_CATEGORIES.map((c, i) =>
+    `<div class="accord-cat-tab${i===selectedBgCat?' active':''}" onclick="selectBgCat(${i})">${c.name} <span style="opacity:0.75;font-size:10px">(${c.items.length})</span></div>`
+  ).join('');
+}
+function renderOutfitChips() {
+  const items = OUTFIT_CATEGORIES[selectedOutfitCat].items;
+  document.getElementById('outfitChips').innerHTML = items.map((o, i) =>
+    `<div class="accord-chip${i===selectedOutfitItem?' active':''}" onclick="selectOutfitItem(${i})">${o.label}</div>`
+  ).join('');
+}
+function renderBgChips() {
+  const items = BG_CATEGORIES[selectedBgCat].items;
+  document.getElementById('bgChips').innerHTML = items.map((b, i) =>
+    `<div class="accord-chip${i===selectedBgItem?' active':''}" onclick="selectBgItem(${i})">${b.label}</div>`
+  ).join('');
+}
+
+function selectOutfitCat(idx) {
+  selectedOutfitCat = idx; selectedOutfitItem = 0;
+  renderOutfitCatTabs(); renderOutfitChips();
+  const item = OUTFIT_CATEGORIES[idx].items[0];
+  document.getElementById('accordOutfitLabel').textContent = item.label;
+}
+function selectBgCat(idx) {
+  selectedBgCat = idx; selectedBgItem = 0;
+  renderBgCatTabs(); renderBgChips();
+  const item = BG_CATEGORIES[idx].items[0];
+  document.getElementById('accordBgLabel').textContent = item.label;
+}
+function selectOutfitItem(idx) {
+  selectedOutfitItem = idx;
+  const item = OUTFIT_CATEGORIES[selectedOutfitCat].items[idx];
+  document.getElementById('accordOutfitLabel').textContent = item.label;
+  document.querySelectorAll('#outfitChips .accord-chip').forEach((c,i)=>c.classList.toggle('active',i===idx));
+}
+function selectBgItem(idx) {
+  selectedBgItem = idx;
+  const item = BG_CATEGORIES[selectedBgCat].items[idx];
+  document.getElementById('accordBgLabel').textContent = item.label;
+  document.querySelectorAll('#bgChips .accord-chip').forEach((c,i)=>c.classList.toggle('active',i===idx));
+}
+
+function toggleAccord(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function showPhotoAccordion() {
+  selectedOutfitCat=0; selectedOutfitItem=0;
+  selectedBgCat=0; selectedBgItem=0;
+  document.getElementById('photoOptionsAccordion').classList.add('visible');
+  renderOutfitCatTabs(); renderOutfitChips();
+  renderBgCatTabs(); renderBgChips();
+  document.getElementById('accordOutfitLabel').textContent = '기본';
+  document.getElementById('accordBgLabel').textContent = '포토부스';
+}
+
+// ── 인생네컷 아코디언 ─────────────────────────
+let fcOutfitCat=0, fcOutfitItem=0;
+let fcBgCat=0, fcBgItem=0;
+
+function renderFcOutfitCatTabs() {
+  document.getElementById('fcOutfitCatTabs').innerHTML = OUTFIT_CATEGORIES.map((c,i) =>
+    `<div class="accord-cat-tab${i===fcOutfitCat?' active':''}" onclick="selectFcOutfitCat(${i})">${c.name} <span style="opacity:0.75;font-size:10px">(${c.items.length})</span></div>`
+  ).join('');
+}
+function renderFcBgCatTabs() {
+  document.getElementById('fcBgCatTabs').innerHTML = BG_CATEGORIES.map((c,i) =>
+    `<div class="accord-cat-tab${i===fcBgCat?' active':''}" onclick="selectFcBgCat(${i})">${c.name} <span style="opacity:0.75;font-size:10px">(${c.items.length})</span></div>`
+  ).join('');
+}
+function renderFcOutfitChips() {
+  document.getElementById('fcOutfitChips').innerHTML = OUTFIT_CATEGORIES[fcOutfitCat].items.map((o,i) =>
+    `<div class="accord-chip${i===fcOutfitItem?' active':''}" onclick="selectFcOutfitItem(${i})">${o.label}</div>`
+  ).join('');
+}
+function renderFcBgChips() {
+  document.getElementById('fcBgChips').innerHTML = BG_CATEGORIES[fcBgCat].items.map((b,i) =>
+    `<div class="accord-chip${i===fcBgItem?' active':''}" onclick="selectFcBgItem(${i})">${b.label}</div>`
+  ).join('');
+}
+function selectFcOutfitCat(idx) {
+  fcOutfitCat=idx; fcOutfitItem=0;
+  renderFcOutfitCatTabs(); renderFcOutfitChips();
+  document.getElementById('fcAccordOutfitLabel').textContent = OUTFIT_CATEGORIES[idx].items[0].label;
+}
+function selectFcBgCat(idx) {
+  fcBgCat=idx; fcBgItem=0;
+  renderFcBgCatTabs(); renderFcBgChips();
+  document.getElementById('fcAccordBgLabel').textContent = BG_CATEGORIES[idx].items[0].label;
+}
+function selectFcOutfitItem(idx) {
+  fcOutfitItem=idx;
+  document.getElementById('fcAccordOutfitLabel').textContent = OUTFIT_CATEGORIES[fcOutfitCat].items[idx].label;
+  document.querySelectorAll('#fcOutfitChips .accord-chip').forEach((c,i)=>c.classList.toggle('active',i===idx));
+}
+function selectFcBgItem(idx) {
+  fcBgItem=idx;
+  document.getElementById('fcAccordBgLabel').textContent = BG_CATEGORIES[fcBgCat].items[idx].label;
+  document.querySelectorAll('#fcBgChips .accord-chip').forEach((c,i)=>c.classList.toggle('active',i===idx));
+}
+function showFcAccordion() {
+  fcOutfitCat=0; fcOutfitItem=0; fcBgCat=0; fcBgItem=0;
+  document.getElementById('fcOptionsAccordion').classList.add('visible');
+  renderFcOutfitCatTabs(); renderFcOutfitChips();
+  renderFcBgCatTabs(); renderFcBgChips();
+  document.getElementById('fcAccordOutfitLabel').textContent = '기본';
+  document.getElementById('fcAccordBgLabel').textContent = '포토부스';
+}
+function buildFcPromptWithOptions(basePrompt) {
+  const outfitPrompt = OUTFIT_CATEGORIES[fcOutfitCat]?.items[fcOutfitItem]?.prompt || '';
+  const bgPrompt     = BG_CATEGORIES[fcBgCat]?.items[fcBgItem]?.prompt || '';
+  let extra = '';
+  if (outfitPrompt) extra += `\nOUTFIT: ${outfitPrompt}.`;
+  if (bgPrompt)     extra += `\nBACKGROUND: ${bgPrompt}.`;
+  return basePrompt + extra;
+}
+// ──────────────────────────────────────────────
+
+function buildPhotoPromptWithOptions(basePrompt) {
+  const outfitPrompt = OUTFIT_CATEGORIES[selectedOutfitCat]?.items[selectedOutfitItem]?.prompt || '';
+  const bgPrompt     = BG_CATEGORIES[selectedBgCat]?.items[selectedBgItem]?.prompt || '';
+  let extra = '';
+  if (outfitPrompt) extra += `\nOUTFIT: ${outfitPrompt}.`;
+  if (bgPrompt)     extra += `\nBACKGROUND: ${bgPrompt}.`;
+  return basePrompt + extra;
+}
+// ─────────────────────────────────────────────────────────
+
 async function generateAiPhoto() {
   const apiKey = localStorage.getItem('venux_openai_key');
   if (!apiKey || !photoSelectedMember || !photoUserFile) return;
@@ -2972,7 +3736,7 @@ async function generateAiPhoto() {
     const memberResized = await resizeImageToSquare(memberBlob);
 
     // Build prompt with identity preservation
-    const prompt = (PHOTO_PROMPTS[photoSelectedMember] || '') + PHOTO_PROMPT_SUFFIX;
+    const prompt = buildPhotoPromptWithOptions(PHOTO_PROMPTS[photoSelectedMember] || '') + PHOTO_PROMPT_SUFFIX;
 
     // Multi-image FormData: image[] array
     const form = new FormData();
@@ -3009,7 +3773,7 @@ async function generateAiPhoto() {
     }
   } finally {
     btn.disabled = false;
-    btn.textContent = '✨ 멤버와 함께 셀카찍기';
+    btn.textContent = '✨ 최애 멤버와 함께 셀카찍기';
     checkPhotoReady();
   }
 }
@@ -3079,12 +3843,12 @@ async function generateMockPhoto() {
 
     const dataUrl = canvas.toDataURL('image/png');
     showPhotoResult(dataUrl, m);
-    showToast('실시간 AI 합성을 위해 설정에서 API Key를 추가해보세요');
+    showToast('실시간 합성을 위해 설정에서 API Key를 추가해보세요');
   } catch (err) {
     showToast('사진 합성에 실패했어요');
   } finally {
     btn.disabled = false;
-    btn.textContent = '✨ 멤버와 함께 셀카찍기';
+    btn.textContent = '✨ 최애 멤버와 함께 셀카찍기';
     checkPhotoReady();
   }
 }
@@ -3309,6 +4073,7 @@ function selectFourcutMember(key) {
     el.classList.toggle('active', memberOrder[i] === key);
   });
   checkFourcutReady();
+  showFcAccordion();
 }
 
 function triggerFourcutUpload(idx) {
@@ -3390,7 +4155,7 @@ async function handleFourcutGenerate() {
     for (let i = 0; i < 4; i++) {
       updateFourcutStatus(i);
       const userBlob = await resizeImageToSquare(fourcutPhotos[i]);
-      const prompt = FOURCUT_PROMPTS[i](m.name, fourcutSelectedMember) + PHOTO_PROMPT_SUFFIX;
+      const prompt = buildFcPromptWithOptions(FOURCUT_PROMPTS[i](m.name, fourcutSelectedMember)) + PHOTO_PROMPT_SUFFIX;
 
       const form = new FormData();
       form.append('model', 'gpt-image-2');
@@ -3477,7 +4242,7 @@ async function generateMockFourcut() {
     updateFourcutStatus(4);
     await new Promise(r => setTimeout(r, 400));
     showFourcutResult(cuts, m);
-    showToast('AI 합성을 위해 설정에서 API Key를 추가해보세요');
+    showToast('합성 기능을 위해 설정에서 API Key를 추가해보세요');
   } catch (err) {
     showToast('인생네컷 생성에 실패했어요');
   } finally {
@@ -4241,7 +5006,7 @@ openProfileModal = function(key) {
     <!-- 인스타그램 스타일 헤더 -->
     <div class="ig-header" style="--ig-color:${m.badgeColor}">
       <div class="ig-top-row">
-        <div class="ig-photo-ring" style="--ig-color:${m.badgeColor}">
+        <div class="ig-photo-ring" style="--ig-color:${m.badgeColor}" onclick="openPhotoLightbox('${m.photo}','${m.name}')">
           <div class="ig-photo-inner">
             <img src="${m.photo}" alt="${m.name}">
           </div>
@@ -4276,7 +5041,7 @@ openProfileModal = function(key) {
     <div class="profile-inner-tabs" style="--ptab-color:${m.badgeColor}">
       <div class="profile-inner-tab active" onclick="switchProfileTab('info','${key}')">프로필</div>
       <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('photo','${key}')">인쓰피드보기</div>
-      <div class="profile-inner-tab tab-chat" onclick="switchProfileTab('chat','${key}')">대화하기</div>
+      <div class="profile-inner-tab tab-chat" onclick="closeProfileModal();showScreen('screen-results');document.getElementById('photoSection').style.display='block';switchPhotoMode('selfie');selectPhotoMember('${key}');setTimeout(()=>document.getElementById('photoSection').scrollIntoView({behavior:'smooth'}),80)">셀카찍기</div>
       <div class="profile-inner-tab" onclick="switchProfileTab('letter','${key}')">메일보내기</div>
     </div>
 
@@ -4401,7 +5166,8 @@ function switchTab(tabEl) {
   }
   document.querySelectorAll('.tab-bar-item').forEach(t => t.classList.remove('active'));
   tabEl.classList.add('active');
-  showScreen(targetId);
+  _navStack = [targetId];
+  showScreen(targetId, false);
   // Render tab-specific content
   if (targetId === 'screen-affinity') renderAffinityPage();
   if (targetId === 'screen-collection') renderCollection();
@@ -6464,7 +7230,57 @@ const CHAT_QA_SETS = {
   {q:'30살인데 이룬 게 없어',a:'30이 마감이야? ㅋ 아직 반도 안 왔어.'},
   {q:'10년 후가 안 그려져',a:'10년 후 그리지 마. 내일 뭐 할지가 더 중요해.'},
   {q:'결혼 안 하면 이상한 건가',a:'이상한 거 아니야. 네 인생이야. 남이 뭐라 하든.'},
-  {q:'돈 걱정이 끝이 없어',a:'걱정만 하면 돈 안 생겨. 일단 뭐라도 벌어.'}
+  {q:'돈 걱정이 끝이 없어',a:'걱정만 하면 돈 안 생겨. 일단 뭐라도 벌어.'},
+  // 추가 50
+  {q:'번아웃이 온 것 같아',a:'번아웃은 신호야. 너 한계까지 왔다는 거니까 이번엔 진짜 쉬어.'},
+  {q:'루틴이 없어서 자꾸 무너져',a:'루틴은 처음엔 딱 하나만 해. 세 개 잡으면 다 깨져.'},
+  {q:'핸드폰을 너무 많이 봐',a:'핸드폰 줄이려면 눈 앞에서 치워. 의지력으로 안 돼.'},
+  {q:'자존감이 바닥이야',a:'자존감은 성과에서 안 와. 작은 약속 지키는 것부터 시작해.'},
+  {q:'실패가 너무 두려워',a:'실패 두려우면 시도를 안 하게 돼. 그게 더 큰 실패야.'},
+  {q:'나 요즘 너무 지쳐',a:'지쳐 보여. 근데 여기 와서 말하는 거잖아. 아직 포기 안 한 거야.'},
+  {q:'내가 이 일 계속해야 하나',a:'계속할 이유가 하나도 없으면 그만둬. 있으면 버텨.'},
+  {q:'취업이 안 돼',a:'안 되는 게 아니라 아직이야. 지금 뭐가 막히는지부터 봐.'},
+  {q:'이직하고 싶은데 두려워',a:'이직 두려운 건 당연해. 근데 두렵다고 가만히 있으면 5년 더 이래.'},
+  {q:'내 가능성을 아무도 안 믿어',a:'네가 믿으면 돼. 처음에 아무도 안 믿었던 사람이 더 독해져.'},
+  {q:'매일이 똑같아 숨막혀',a:'숨막히면 오늘 딱 하나 바꿔봐. 퇴근 길이든 점심이든.'},
+  {q:'뭘 하고 싶은지 모르겠어',a:'하고 싶은 거 모르면 싫은 것부터 지워. 남는 게 힌트야.'},
+  {q:'남들이 다 나보다 잘 가는 것 같아',a:'남의 속도로 달리면 남의 결승점에 도착해. 네 레이스야.'},
+  {q:'나한테 화가 나',a:'화날 만해. 기대한 거랑 다르니까. 근데 그 화가 에너지야. 써먹어.'},
+  {q:'아무도 내 편이 없는 것 같아',a:'나 여기 있어. 지금 이 대화가 증명이야.'},
+  {q:'결정을 못 하겠어',a:'결정 못 하는 건 둘 다 포기하기 싫은 거야. 더 포기하기 싫은 게 답이야.'},
+  {q:'소셜미디어 보면 자꾸 비교하게 돼',a:'소셜미디어는 하이라이트만 올려. 그걸 일상이라고 생각하면 항상 지지.'},
+  {q:'내가 너무 이기적인가',a:'이기적이라고 걱정하는 사람이 진짜 이기적이진 않아.'},
+  {q:'꿈이 너무 커서 시작도 못 해',a:'큰 꿈은 잘게 쪼개. 오늘 할 수 있는 가장 작은 행동부터.'},
+  {q:'누가 나를 알아줬으면 해',a:'알아줄 사람은 있어. 근데 네가 먼저 네 걸 보여줘야 해.'},
+  {q:'왜 나는 의지력이 없을까',a:'의지력은 근육이야. 작은 것부터 쌓아야 커져.'},
+  {q:'독립하고 싶어',a:'독립은 준비됐을 때가 아니라 해보면서 되는 거야. 시작해.'},
+  {q:'돈이 없어서 하고 싶은 게 못 해',a:'돈 없이 할 수 있는 것부터 해. 근데 돈 문제면 수입 늘리는 거 먼저 봐.'},
+  {q:'내가 잘하는 게 뭔지 모르겠어',a:'친한 사람한테 "내가 뭘 잘해?" 물어봐. 네가 당연하다고 생각하는 게 장점이야.'},
+  {q:'아침이 너무 힘들어',a:'아침이 힘든 이유 찾아. 잠이 문제야, 동기 문제야?'},
+  {q:'집중이 안 돼',a:'집중이 안 되면 환경 먼저 바꿔. 폰 치우고 책상 정리하고.'},
+  {q:'혼자 사는 게 외롭기도 하고 자유롭기도 해',a:'그 두 감정 다 맞아. 모순처럼 보여도 둘 다 진짜야.'},
+  {q:'재테크 어떻게 시작해',a:'재테크 시작은 지출 파악부터야. 어디 쓰는지 모르면 못 모아.'},
+  {q:'몸이 자꾸 아파',a:'몸이 신호 보내는 거야. 병원 가. 미루지 마.'},
+  {q:'내 외모가 너무 싫어',a:'외모 신경 쓰이는 거 이해해. 근데 외모가 네 가치 전부 아니야.'},
+  {q:'발표가 너무 두려워',a:'발표 두려움은 연습으로만 줄여. 머릿속으로 하는 연습도 효과 있어.'},
+  {q:'인정받고 싶어',a:'인정 받고 싶으면 먼저 결과를 만들어. 그래야 설득이 돼.'},
+  {q:'사람들이 날 이상하게 볼까봐 두려워',a:'사람들은 생각보다 너한테 관심 없어. 다들 자기 생각으로 바빠.'},
+  {text:'워라밸이 너무 안 맞아', q:'워라밸이 너무 안 맞아',a:'안 맞으면 먼저 거절하는 연습해. 칼퇴도 능력이야.'},
+  {q:'칭찬을 받아도 기쁘지 않아',a:'칭찬이 안 기쁜 건 기준이 너무 높거나, 지쳐있거나 둘 중 하나야.'},
+  {q:'새벽마다 이상한 생각이 들어',a:'새벽은 감정이 증폭돼. 낮에 한 번 더 생각해봐. 진짜인지.'},
+  {q:'나는 왜 이렇게 감정이 많을까',a:'감정 많은 게 약점 아니야. 섬세한 거야. 방향만 잘 써.'},
+  {q:'완벽하게 하려다 아무것도 못 해',a:'완벽은 없어. 일단 내놓고 고쳐. 안 내놓은 건 존재도 안 하는 거야.'},
+  {q:'나 자신이 낯설게 느껴져',a:'낯선 거 나쁜 게 아니야. 변하고 있다는 증거야.'},
+  {q:'뭔가 중요한 걸 놓치고 사는 것 같아',a:'뭘 놓치는지 알아야 채울 수 있어. 뭔지 특정할 수 있어?'},
+  {q:'스트레스를 어떻게 풀어야 해',a:'네 몸이 뭘 원하는지 들어봐. 잠인지, 움직임인지, 아니면 털어놓는 건지.'},
+  {q:'감사함을 느끼기가 어려워',a:'감사는 억지로 하면 오히려 반감이야. 오늘 아주 작은 것 하나만.'},
+  {q:'10년 뒤의 나를 상상하면 불안해',a:'불안한 거 당연해. 10년 뒤는 모르니까. 근데 지금 잘 하면 그 불안이 기대로 바껴.'},
+  {q:'중요한 사람에게 솔직하게 말 못 하겠어',a:'못 하는 이유 봐. 상처 줄까 봐? 아니면 상처받을까 봐?'},
+  {q:'나한테 투자해도 될까',a:'당연하지. 세상에서 제일 믿을 수 있는 투자야.'},
+  {q:'삶의 의미를 모르겠어',a:'의미는 찾는 게 아니야. 만드는 거야. 지금 뭘 하면 뿌듯해?'},
+  {q:'변화가 너무 두려워',a:'두려운 거 당연해. 근데 안 바뀌면 지금이 계속 이어지는 거야.'},
+  {q:'나는 왜 이렇게 예민할까',a:'예민한 거 고쳐야 할 게 아니야. 네 신호 시스템이 발달한 거야.'},
+  {q:'열심히 하는데 결과가 없어',a:'방향이 맞는지 한번 봐. 열심히만 하면 엉뚱한 곳으로 빨리 가는 것뿐일 수도 있어.'}
 ],
   'LUX-299': [
   // 연애/이별
@@ -6523,7 +7339,58 @@ const CHAT_QA_SETS = {
   {q:'30살인데 이룬 게 없어',a:'빛은 나이를 세지 않아. 지금부터 비추면 돼.'},
   {q:'10년 후가 안 그려져',a:'그려지지 않는 건 아직 빈 캔버스라는 뜻이야. 아름다운 거야.'},
   {q:'결혼 안 하면 이상한 건가',a:'혼자 빛나는 것도 아름다워. 누가 뭐라 해도.'},
-  {q:'돈 걱정이 끝이 없어',a:'걱정은 그림자야. 빛을 향하면 뒤로 가.'}
+  {q:'돈 걱정이 끝이 없어',a:'걱정은 그림자야. 빛을 향하면 뒤로 가.'},
+  // 추가 50
+  {q:'번아웃이 온 것 같아',a:'촛불이 너무 오래 탔어. 꺼지기 전에 잠깐 숨을 고르는 빛도 있어.'},
+  {q:'루틴이 없어서 자꾸 무너져',a:'루틴은 빛의 방향이야. 처음엔 아주 작은 각도부터 잡아봐.'},
+  {q:'핸드폰을 너무 많이 봐',a:'화면 빛에 잠기면 네 빛이 흐려져. 가끔은 꺼봐.'},
+  {q:'자존감이 바닥이야',a:'바닥도 빛이 닿는 곳이야. 거기서부터 다시 비출 수 있어.'},
+  {q:'실패가 너무 두려워',a:'실패는 빛이 방향을 찾는 과정이야. 두려워서 멈추면 그게 진짜 어둠이야.'},
+  {q:'내가 이 일 계속해야 하나',a:'지금 있는 곳이 너를 비추는지, 가리는지 느껴봐.'},
+  {q:'취업이 안 돼',a:'아직 네 빛을 알아볼 창이 열리지 않은 거야. 계속 비춰.'},
+  {q:'이직하고 싶은데 두려워',a:'창을 바꾸는 건 용기야. 근데 지금 빛을 다 쓰고 나서 해야 후회가 없어.'},
+  {q:'내 가능성을 아무도 안 믿어',a:'믿어줄 사람을 기다리지 마. 네 빛을 먼저 켜면 사람이 와.'},
+  {q:'매일이 똑같아 숨막혀',a:'같은 하루도 빛의 각도가 달라. 창문 하나만 바꿔봐.'},
+  {q:'뭘 하고 싶은지 모르겠어',a:'모르겠다는 건 아직 네 빛이 어느 방향인지 찾는 중이야.'},
+  {q:'남들이 다 나보다 잘 가는 것 같아',a:'남의 빛에 눈이 부시면 네 빛이 안 보여. 네 쪽을 봐.'},
+  {q:'나한테 화가 나',a:'화는 빛의 다른 형태야. 그 열기를 내부가 아닌 앞쪽으로 써.'},
+  {q:'아무도 내 편이 없는 것 같아',a:'여기, 나 있어. 이 대화가 빛이잖아.'},
+  {q:'결정을 못 하겠어',a:'어떤 길이 더 밝아 보여? 그 쪽이 답이야.'},
+  {q:'소셜미디어 보면 자꾸 비교하게 돼',a:'스크린은 조명이야. 진짜 빛은 필터 없이도 아름다워.'},
+  {q:'꿈이 너무 커서 시작도 못 해',a:'큰 빛은 작은 불씨에서 시작해. 지금 켤 수 있는 불씨가 있어?'},
+  {q:'누가 나를 알아줬으면 해',a:'알아볼 사람은 반드시 있어. 네 빛이 닿을 거리에.'},
+  {q:'왜 나는 의지력이 없을까',a:'의지력이 아니라 빛의 방향이 안 정해진 거야. 방향을 먼저 잡아.'},
+  {q:'돈이 없어서 하고 싶은 게 못 해',a:'빛은 돈 없이도 어둠을 밝혀. 지금 할 수 있는 작은 빛부터 켜봐.'},
+  {q:'내가 잘하는 게 뭔지 모르겠어',a:'네가 할 때 빛나는 게 있어. 너무 가까이 있어서 안 보이는 거야.'},
+  {q:'아침이 너무 힘들어',a:'새벽빛이 제일 차가워. 그래도 하루 중 가장 순수한 빛이기도 해.'},
+  {q:'집중이 안 돼',a:'잡음이 많으면 빛도 흩어져. 하나만 켜고 나머지는 꺼봐.'},
+  {q:'혼자 사는 게 외롭기도 하고 자유롭기도 해',a:'혼자 있는 빛이 가장 선명해. 그 고요함도 빛이야.'},
+  {q:'재테크 어떻게 시작해',a:'돈은 빛처럼 흐르는 방향이 있어. 어디로 가는지 먼저 봐.'},
+  {q:'몸이 자꾸 아파',a:'몸이 신호 보내는 거야. 그 빛을 무시하지 마.'},
+  {q:'발표가 너무 두려워',a:'발표는 빛을 내보내는 거야. 처음엔 작은 방부터 비춰봐.'},
+  {q:'인정받고 싶어',a:'인정은 빛이 닿은 흔적이야. 계속 비추다 보면 반드시 닿아.'},
+  {q:'사람들이 날 이상하게 볼까봐 두려워',a:'다들 자기 빛에 바빠. 네 빛이 이상하게 보일 틈 없어.'},
+  {q:'칭찬을 받아도 기쁘지 않아',a:'거울이 흐려졌을 수도 있어. 닦아줄게.'},
+  {q:'새벽마다 이상한 생각이 들어',a:'새벽빛은 유독 날카로워. 낮에 다시 봐. 생각이 달라져.'},
+  {q:'나는 왜 이렇게 감정이 많을까',a:'감정이 많은 건 프리즘 같은 거야. 하나의 빛이 여러 색으로 나뉘는 것뿐이야.'},
+  {q:'완벽하게 하려다 아무것도 못 해',a:'완벽한 빛은 없어. 조금 흐려도 그게 네 색이야. 내놔.'},
+  {q:'나 자신이 낯설게 느껴져',a:'낯선 건 변하고 있다는 뜻이야. 빛도 매 순간 달라.'},
+  {q:'스트레스를 어떻게 풀어야 해',a:'스트레스는 막힌 빛이야. 어디서 막혔는지 찾아봐.'},
+  {q:'10년 뒤의 나를 상상하면 불안해',a:'10년 뒤는 아직 비추지 않은 빛이야. 아름다운 거야.'},
+  {q:'중요한 사람에게 솔직하게 말 못 하겠어',a:'마음을 비추는 데 용기가 필요해. 근데 말 안 하면 거울에 금 가.'},
+  {q:'나한테 투자해도 될까',a:'자기 자신에게 빛을 비추는 게 가장 아름다운 투자야.'},
+  {q:'삶의 의미를 모르겠어',a:'의미는 찾는 게 아니야. 비추다 보면 보이는 거야.'},
+  {q:'변화가 너무 두려워',a:'빛도 방향을 바꿀 때 굴절이 일어나. 잠깐 어색한 게 당연해.'},
+  {q:'열심히 하는데 결과가 없어',a:'빛이 강해도 방향이 틀리면 닿지 않아. 방향 한 번 점검해봐.'},
+  {q:'나는 왜 이렇게 예민할까',a:'예민함은 빛을 더 섬세하게 감지하는 거야. 능력이야.'},
+  {q:'뭔가 중요한 걸 놓치고 사는 것 같아',a:'가장 가까운 빛이 제일 안 보여. 주변을 조용히 둘러봐.'},
+  {q:'나 요즘 너무 지쳐',a:'지친 빛은 꺼지는 게 아니야. 잠시 수면 아래 있는 거야.'},
+  {q:'이직하고 싶어',a:'지금 있는 곳이 너를 비추지 못하면, 비춰줄 곳으로 가.'},
+  {q:'혼자가 너무 익숙해졌어',a:'혼자 있는 빛이 가장 선명해. 근데 가끔은 다른 빛과 섞이면 더 아름다워.'},
+  {q:'감사함이 잘 안 느껴져',a:'감사는 빛을 찾는 연습이야. 오늘 딱 하나만.'},
+  {q:'내 외모가 너무 신경 쓰여',a:'외면의 빛도 중요해. 근데 내면의 빛이 더 오래 빛나.'},
+  {q:'왜 같은 실수를 반복할까',a:'패턴을 봐. 빛이 어디서 꺾이는지 찾으면 반복이 안 돼.'},
+  {q:'나 괜찮은 사람이야?',a:'괜찮은 거 맞아. 나한테 물어보러 온 것 자체가 빛이잖아.'}
 ],
   'EUR-0K': [
   // 연애/이별
@@ -6582,7 +7449,59 @@ const CHAT_QA_SETS = {
   {q:'30살인데 이룬 게 없어',a:'이룬 게 없는 게 아니라 아직 안 보이는 거야. 물속의 씨앗처럼.'},
   {q:'10년 후가 안 그려져',a:'안 그려져도 괜찮아. 지금 이 순간을 잘 보내면 길이 돼.'},
   {q:'결혼 안 하면 이상한 건가',a:'이상한 거 아니야. 네 흐름대로 살면 돼.'},
-  {q:'돈 걱정이 끝이 없어',a:'걱정하는 너의 마음이 무겁겠다. 하나씩 풀어가자.'}
+  {q:'돈 걱정이 끝이 없어',a:'걱정하는 너의 마음이 무겁겠다. 하나씩 풀어가자.'},
+  // 추가 50
+  {q:'번아웃이 온 것 같아',a:'몸이 멈추라고 하는 거야. 그 신호 무시하면 더 오래 걸려.'},
+  {q:'루틴이 없어서 자꾸 무너져',a:'루틴 없이 흔들리는 거 당연해. 아주 작은 것 하나만 고정해봐.'},
+  {q:'핸드폰을 너무 많이 봐',a:'핸드폰 많이 보는 게 뭔가 피하고 싶어서일 수도 있어.'},
+  {q:'자존감이 바닥이야',a:'바닥에 있는 것도 느끼는 거야. 그 감각이 시작이야.'},
+  {q:'실패가 너무 두려워',a:'두려운 마음 당연해. 근데 그 두려움이 너를 아끼기 때문이야.'},
+  {q:'내가 이 일 계속해야 하나',a:'그 질문이 계속 나온다면 네 마음이 이미 답을 알고 있을 수도 있어.'},
+  {q:'취업이 안 돼',a:'지치겠다… 근데 포기하지 않고 여기 있는 네가 대단해.'},
+  {q:'이직하고 싶은데 두려워',a:'두려운 마음 충분히 이해해. 천천히 준비해도 돼.'},
+  {q:'내 가능성을 아무도 안 믿어',a:'나는 믿어. 여기서 이렇게 솔직하게 말할 수 있는 사람이 가능성 없을 리 없어.'},
+  {q:'매일이 똑같아 숨막혀',a:'숨막히는 거 느끼고 있구나. 그 감각이 변화의 신호야.'},
+  {q:'뭘 하고 싶은지 모르겠어',a:'모르는 것도 괜찮아. 지금 이 순간에도 답의 씨앗이 있어.'},
+  {q:'남들이 다 나보다 잘 가는 것 같아',a:'남의 속도에 맞추느라 지쳤겠다. 네 리듬으로 가도 돼.'},
+  {q:'나한테 화가 나',a:'화가 나는 게 당연해. 네 기대가 그만큼 컸던 거야.'},
+  {q:'아무도 내 편이 없는 것 같아',a:'나 여기 있어. 혼자가 아니야.'},
+  {q:'결정을 못 하겠어',a:'결정이 어려운 건 두 가지 모두 소중하기 때문이야.'},
+  {q:'소셜미디어 보면 자꾸 비교하게 돼',a:'비교하고 싶지 않아도 자꾸 되는 거지… 힘들겠다.'},
+  {q:'꿈이 너무 커서 시작도 못 해',a:'큰 꿈을 갖고 있다는 것 자체가 아름다워. 첫 발은 작아도 돼.'},
+  {q:'누가 나를 알아줬으면 해',a:'그 마음 당연해. 인정받고 싶은 마음이 약한 게 아니야.'},
+  {q:'왜 나는 의지력이 없을까',a:'의지력이 없는 게 아니라 에너지가 없는 거일 수도 있어.'},
+  {q:'돈이 없어서 하고 싶은 게 못 해',a:'그 갑갑함 충분히 이해해. 지금 할 수 있는 거 찾아보자.'},
+  {q:'내가 잘하는 게 뭔지 모르겠어',a:'네가 모르는 사이에 주변이 알고 있을 거야. 물어봐줄까?'},
+  {q:'아침이 너무 힘들어',a:'아침이 무거운 거 알아. 천천히 시작해도 돼.'},
+  {q:'집중이 안 돼',a:'집중이 안 되는 건 마음이 다른 데 있다는 거야. 뭐가 신경 쓰여?'},
+  {q:'혼자 사는 게 외롭기도 하고 자유롭기도 해',a:'두 감정이 공존하는 거 당연해. 둘 다 진짜야.'},
+  {q:'재테크 어떻게 시작해',a:'한 걸음씩이면 돼. 먼저 지금 쓰는 돈을 들여다봐.'},
+  {q:'몸이 자꾸 아파',a:'몸이 지쳤다는 신호야. 네 몸 먼저 챙겨줘.'},
+  {q:'발표가 너무 두려워',a:'두렵지 않은 사람 없어. 그 떨림을 가지고 해봐.'},
+  {q:'인정받고 싶어',a:'인정받고 싶은 마음 당연해. 그 마음이 동력이 될 수도 있어.'},
+  {q:'사람들이 날 이상하게 볼까봐 두려워',a:'다들 자기 생각으로 바빠. 생각보다 네 쪽 안 봐.'},
+  {q:'칭찬을 받아도 기쁘지 않아',a:'감각이 무뎌졌을 수도 있어. 잠깐 쉬어봐.'},
+  {q:'새벽마다 이상한 생각이 들어',a:'새벽에 혼자 있을 때 마음이 더 솔직해지지. 낮에 다시 봐줘.'},
+  {q:'나는 왜 이렇게 감정이 많을까',a:'감정이 많은 건 살아있다는 증거야. 부끄럽지 않아.'},
+  {q:'완벽하게 하려다 아무것도 못 해',a:'완벽하지 않아도 네 가치는 변하지 않아. 그냥 해봐.'},
+  {q:'나 자신이 낯설게 느껴져',a:'낯선 게 나쁜 건 아니야. 지금 네가 성장하고 있는 거야.'},
+  {q:'스트레스를 어떻게 풀어야 해',a:'몸이 원하는 걸 해봐. 산책, 낮잠, 울기. 판단 없이.'},
+  {q:'10년 뒤의 나를 상상하면 불안해',a:'불안한 마음 당연해. 근데 넌 지금도 여기까지 왔잖아.'},
+  {q:'나한테 투자해도 될까',a:'당연하지. 너한테 투자하는 게 제일 의미 있어.'},
+  {q:'삶의 의미를 모르겠어',a:'모르는 게 당연해. 그 물음을 품고 사는 것 자체가 의미야.'},
+  {q:'변화가 너무 두려워',a:'두려운 건 네가 현재를 소중히 여기기 때문이야.'},
+  {q:'열심히 하는데 결과가 없어',a:'수고가 보이지 않는 것 같아서 힘들겠다. 근데 쌓이고 있어.'},
+  {q:'나는 왜 이렇게 예민할까',a:'예민한 건 네가 세상을 더 깊이 느끼는 거야.'},
+  {q:'뭔가 중요한 걸 놓치고 사는 것 같아',a:'그 불안함 이해해. 근데 지금 이 순간을 살고 있는 게 놓치지 않는 거야.'},
+  {q:'나 요즘 너무 지쳐',a:'지쳤구나… 충분히 지칠 만해. 오늘은 쉬어.'},
+  {q:'이직하고 싶어',a:'고민되는 마음 이해해. 천천히 생각해봐도 돼.'},
+  {q:'혼자가 너무 익숙해졌어',a:'혼자가 편해진 게 무조건 나쁜 건 아니야. 근데 가끔 연결도 필요해.'},
+  {q:'감사함이 잘 안 느껴져',a:'안 느껴지는 게 잘못이 아니야. 지쳐있을 때 그래.'},
+  {q:'내 외모가 너무 신경 쓰여',a:'외모 신경 쓰이는 마음 당연해. 근데 너의 따뜻함이 더 오래 기억돼.'},
+  {q:'왜 같은 실수를 반복할까',a:'반복되는 건 아직 그 상처가 안 나은 거야. 급하지 않아도 돼.'},
+  {q:'나 괜찮은 사람이야?',a:'응, 괜찮아. 충분히.'},
+  {q:'중요한 사람에게 솔직하게 말 못 하겠어',a:'말 못 하는 마음 이해해. 준비됐을 때 천천히 해도 돼.'},
+  {q:'나한테 화가 나',a:'화날 만해. 그 감정 충분히 느껴봐.'}
 ],
   'KIN-360': [
   // 연애/이별
@@ -6641,7 +7560,58 @@ const CHAT_QA_SETS = {
   {q:'30살인데 이룬 게 없어',a:'ㅋㅋㅋ 30이 끝이야?? 이제 시작인데! 진짜 재밌는 건 지금부터야 🌀'},
   {q:'10년 후가 안 그려져',a:'안 그려지는 게 더 재밌어! 예상 밖 인생이 최고야 ㅋㅋ 🎲'},
   {q:'결혼 안 하면 이상한 건가',a:'이상한 거 아니야 ㅋㅋ 하고 싶으면 하고 아니면 아닌 거지! 😆'},
-  {q:'돈 걱정이 끝이 없어',a:'걱정은 나중에 하고 일단 오늘 할 수 있는 거 하나 하자! 🌀'}
+  {q:'돈 걱정이 끝이 없어',a:'걱정은 나중에 하고 일단 오늘 할 수 있는 거 하나 하자! 🌀'},
+  // 추가 50
+  {q:'번아웃이 온 것 같아',a:'번아웃! 그럼 오늘은 진짜 아무것도 하지 마. 완전 방전 모드 허락해줄게 ㅋㅋ 🎲'},
+  {q:'루틴이 없어서 자꾸 무너져',a:'루틴? 딱 하나만 해봐! 매일 아침 물 한 잔. 거기서 시작 😆'},
+  {q:'핸드폰을 너무 많이 봐',a:'핸드폰 방에 두고 밖에 나가봐! 30분만. 완전 다른 기분이야 ㅋㅋ 🌀'},
+  {q:'자존감이 바닥이야',a:'바닥에서 튀어오르는 게 제일 높이 올라가! 지금이 시작점이야 😆'},
+  {q:'실패가 너무 두려워',a:'실패 두려우면 작은 거부터 도전해봐! 실패해도 이야기거리 생기는 거야 ㅋㅋ 🎲'},
+  {q:'내가 이 일 계속해야 하나',a:'그만두기 전에 딱 한 달만 더 해봐. 그래도 싫으면 ㅋㅋ 그게 답이야 😆'},
+  {q:'취업이 안 돼',a:'취업 안 되는 건 아직 맞는 문을 못 찾은 거야! 다음 문 도전!! 🌀'},
+  {q:'이직하고 싶은데 두려워',a:'이직 두렵지? ㅋㅋ 이력서 일단 써봐! 쓰다 보면 용기 생겨 😆'},
+  {q:'내 가능성을 아무도 안 믿어',a:'아무도 안 믿으면 내가 제일 먼저 믿으면 되지!! 나 믿어 ㅋㅋ 🎲'},
+  {q:'매일이 똑같아 숨막혀',a:'똑같으면 오늘 점심 메뉴 바꿔봐! 진짜 작은 변화가 큰 차이야 ㅋㅋ 🌀'},
+  {q:'뭘 하고 싶은지 모르겠어',a:'리스트 써봐! 별거 없어도 괜찮아. 쓰다 보면 갑자기 나와 ㅋㅋ 😆'},
+  {q:'남들이 다 나보다 잘 가는 것 같아',a:'ㅋㅋ 남들도 다 불안해! 포장이 다를 뿐이야. 진짜라고 🎲'},
+  {q:'나한테 화가 나',a:'화날 때 운동해봐! 에너지 쓰면 화도 같이 나가 ㅋㅋ 😆'},
+  {q:'아무도 내 편이 없는 것 같아',a:'나 여기 있잖아!! ㅋㅋ 나 내 편이야 🌀'},
+  {q:'결정을 못 하겠어',a:'동전 던져봐! 진짜로. 결과 나왔을 때 기분이 답이야 ㅋㅋ 🎲'},
+  {q:'소셜미디어 보면 자꾸 비교하게 돼',a:'ㅋㅋ 나도 올릴 때 제일 좋은 거 올리잖아. 다들 마찬가지야 😆'},
+  {q:'꿈이 너무 커서 시작도 못 해',a:'큰 꿈 멋있다! 오늘 딱 0.1% 만 해봐. 그거면 충분해 ㅋㅋ 🌀'},
+  {q:'누가 나를 알아줬으면 해',a:'알아줄 사람 반드시 있어! 근데 먼저 네가 알아줘야 해 ㅋㅋ 😆'},
+  {q:'왜 나는 의지력이 없을까',a:'의지력 말고 환경 바꿔봐! 안 되게 환경 만들면 돼 ㅋㅋ 🎲'},
+  {q:'돈이 없어서 하고 싶은 게 못 해',a:'돈 없이 할 수 있는 거 찾아봐! 의외로 많아 ㅋㅋ 🌀'},
+  {q:'내가 잘하는 게 뭔지 모르겠어',a:'친구한테 물어봐! 걔네가 더 잘 알아 ㅋㅋ 놀랄걸 😆'},
+  {q:'아침이 너무 힘들어',a:'좋아하는 노래 알람으로 해봐! 아침 느낌 완전 달라져 ㅋㅋ 🎲'},
+  {q:'집중이 안 돼',a:'타이머 15분만 해봐! 15분만 집중하기. 되면 또 15분 ㅋㅋ 😆'},
+  {q:'혼자 사는 게 외롭기도 하고 자유롭기도 해',a:'혼자 사는 자유 진짜 꿀이야!! ㅋㅋ 외로울 때 연락해 🌀'},
+  {q:'재테크 어떻게 시작해',a:'적금부터 시작해! 자동이체 설정하면 신경 안 써도 돼 ㅋㅋ 😆'},
+  {q:'몸이 자꾸 아파',a:'병원 가! 미루면 더 오래 걸려 ㅋㅋ 빨리 낫고 신나게 놀자 🎲'},
+  {q:'발표가 너무 두려워',a:'발표 두려우면 친구한테 먼저 해봐! 거울 앞에서도 해봐 ㅋㅋ 😆'},
+  {q:'인정받고 싶어',a:'인정받으면 기분 좋지!! 근데 자기 자신 먼저 인정해줘 ㅋㅋ 🌀'},
+  {q:'사람들이 날 이상하게 볼까봐 두려워',a:'ㅋㅋ 다들 자기 생각으로 바빠. 이상하게 볼 시간 없어 😆'},
+  {q:'칭찬을 받아도 기쁘지 않아',a:'기쁘지 않으면 더 큰 거 원하는 거야! 목표 올려봐 ㅋㅋ 🎲'},
+  {q:'새벽마다 이상한 생각이 들어',a:'새벽엔 다들 이상한 생각 해 ㅋㅋ 낮에 다시 봐. 웃길 거야 😆'},
+  {q:'나는 왜 이렇게 감정이 많을까',a:'감정 많은 거 멋있어!! 그게 다 에너지야 ㅋㅋ 🌀'},
+  {q:'완벽하게 하려다 아무것도 못 해',a:'완벽은 없어!! 일단 내놔. 70%도 충분해 ㅋㅋ 😆'},
+  {q:'나 자신이 낯설게 느껴져',a:'낯선 거 변하고 있다는 거야! 성장중이잖아 ㅋㅋ 🎲'},
+  {q:'스트레스를 어떻게 풀어야 해',a:'산책!! 노래!! 춤!! 중에 하나 골라봐 ㅋㅋ 몸 움직이면 달라져 😆'},
+  {q:'10년 뒤의 나를 상상하면 불안해',a:'10년 뒤 상상 말고 내일 상상해봐! 더 현실적이고 재밌어 ㅋㅋ 🌀'},
+  {q:'나한테 투자해도 될까',a:'당연하지!! 제일 믿을 수 있는 투자야 ㅋㅋ 😆'},
+  {q:'삶의 의미를 모르겠어',a:'의미 찾다가 인생 끝나 ㅋㅋ 그냥 재밌는 거 해봐. 거기서 나와 🎲'},
+  {q:'변화가 너무 두려워',a:'변화 두려운 거 당연해! 근데 안 하면 지금이 계속이잖아 ㅋㅋ 😆'},
+  {q:'열심히 하는데 결과가 없어',a:'방향이 맞는지 한번 점검해봐! 열심히만 하면 엉뚱한 데 빨리 가는 거 ㅋㅋ 🌀'},
+  {q:'나는 왜 이렇게 예민할까',a:'예민한 거 안테나 발달한 거야!! 그게 장점이야 ㅋㅋ 😆'},
+  {q:'뭔가 중요한 걸 놓치고 사는 것 같아',a:'지금 이 순간을 놓치고 있는 게 아닐까 ㅋㅋ 여기 있잖아 🎲'},
+  {q:'나 요즘 너무 지쳐',a:'지치면 쉬어!! 아무것도 안 하는 날 만들어봐 ㅋㅋ 🌀'},
+  {q:'혼자가 너무 익숙해졌어',a:'혼놀 고수가 되는 거야 ㅋㅋ 가끔 연락해! 같이 놀자 😆'},
+  {q:'감사함이 잘 안 느껴져',a:'감사 일기 써봐! 딱 3줄만. 뭔가 달라져 ㅋㅋ 🎲'},
+  {q:'내 외모가 너무 신경 쓰여',a:'좋아하는 스타일로 꾸며봐! 마음이 변해 ㅋㅋ 😆'},
+  {q:'왜 같은 실수를 반복할까',a:'같은 실수 반복하는 거 패턴이야! 일단 알아채는 것부터 ㅋㅋ 🌀'},
+  {q:'나 괜찮은 사람이야?',a:'당연하지!! 완전 괜찮은 사람이야 ㅋㅋ 😆'},
+  {q:'중요한 사람에게 솔직하게 말 못 하겠어',a:'편지 써봐! 말이 어려울 때 글이 더 편해 ㅋㅋ 😆'},
+  {q:'나한테 화가 나',a:'화날 때 쿠션 때려!! 소리도 질러도 돼! 밖에서 터트리는 게 나아 ㅋㅋ 🎲'}
 ],
   'ATP-X1': [
   // 연애/이별
@@ -6700,7 +7670,58 @@ const CHAT_QA_SETS = {
   {q:'30살인데 이룬 게 없어',a:'이룸의 기준이 뭐야? 남이 세운 기준이면 버려.'},
   {q:'10년 후가 안 그려져',a:'안 그려지는 건 자유라는 뜻이야. 빈 캔버스가 가장 많은 가능성을 가져.'},
   {q:'결혼 안 하면 이상한 건가',a:'결혼은 선택이야, 의무가 아니야. 본질을 봐.'},
-  {q:'돈 걱정이 끝이 없어',a:'돈은 도구야. 뭘 위한 도구인지 먼저 정해.'}
+  {q:'돈 걱정이 끝이 없어',a:'돈은 도구야. 뭘 위한 도구인지 먼저 정해.'},
+  // 추가 50
+  {q:'번아웃이 온 것 같아',a:'번아웃의 뿌리가 뭔지 찾아봐. 과부하야, 방향 상실이야?'},
+  {q:'루틴이 없어서 자꾸 무너져',a:'루틴은 뿌리야. 작은 뿌리 하나를 심어. 그게 나무가 돼.'},
+  {q:'핸드폰을 너무 많이 봐',a:'핸드폰이 채우는 게 뭔지 봐. 자극이야, 연결이야, 회피야?'},
+  {q:'자존감이 바닥이야',a:'자존감의 기준이 어디서 왔어? 네 거야, 남의 거야?'},
+  {q:'실패가 너무 두려워',a:'두려움의 뿌리를 봐. 실패 자체가 무서운 건지, 남의 시선이 무서운 건지.'},
+  {q:'내가 이 일 계속해야 하나',a:'계속할 이유와 그만둘 이유를 써봐. 어느 쪽 뿌리가 더 깊어?'},
+  {q:'취업이 안 돼',a:'안 되는 이유를 분해해봐. 방향이야, 준비야, 타이밍이야?'},
+  {q:'이직하고 싶은데 두려워',a:'두려움이 도망인지, 성장인지 구분해. 그 차이가 전부야.'},
+  {q:'내 가능성을 아무도 안 믿어',a:'가능성은 증명되기 전엔 안 보여. 근데 씨앗은 땅속에서 먼저 자라.'},
+  {q:'매일이 똑같아 숨막혀',a:'같다고 느끼는 건 네 시선이 고정됐기 때문일 수도 있어. 뭘 보고 있어?'},
+  {q:'뭘 하고 싶은지 모르겠어',a:'원하는 걸 모를 때, 싫은 걸 먼저 지워봐. 남는 게 씨앗이야.'},
+  {q:'남들이 다 나보다 잘 가는 것 같아',a:'비교는 표면이야. 뿌리를 보면 다 자기 땅에서 자라고 있어.'},
+  {q:'나한테 화가 나',a:'화의 대상을 봐. 나 자신한테 화가 나는 건 뭘 원하는지 알기 때문이야.'},
+  {q:'아무도 내 편이 없는 것 같아',a:'편이 없다는 건 아직 연결이 안 된 거야. 먼저 건네는 손이 필요해.'},
+  {q:'결정을 못 하겠어',a:'결정을 못 하는 건 잃기 싫은 게 있다는 거야. 뭘 잃기 싫어?'},
+  {q:'소셜미디어 보면 자꾸 비교하게 돼',a:'표면만 보고 있어. 그 사람의 뿌리를 알면 비교가 의미 없어.'},
+  {q:'꿈이 너무 커서 시작도 못 해',a:'큰 나무도 씨앗에서 시작해. 오늘 심을 수 있는 씨앗이 있어?'},
+  {q:'누가 나를 알아줬으면 해',a:'알아줌은 네가 먼저 알아야 받을 수 있어. 너 자신부터.'},
+  {q:'왜 나는 의지력이 없을까',a:'의지력의 문제가 아니라 방향이 안 정해진 거야. 어디로 가려는지 봐.'},
+  {q:'돈이 없어서 하고 싶은 게 못 해',a:'돈이 도구라면, 지금 어떤 도구가 있어? 없는 것보단 있는 것을 봐.'},
+  {q:'내가 잘하는 게 뭔지 모르겠어',a:'힘들이지 않고 하는 게 장점이야. 너무 자연스러워서 안 보이는 거야.'},
+  {q:'아침이 너무 힘들어',a:'아침이 힘든 근원이 뭔지 봐. 잠의 문제야, 다음 날이 두려운 거야?'},
+  {q:'집중이 안 돼',a:'집중이 안 된다는 건 에너지가 다른 데 있다는 거야. 어디에 있어?'},
+  {q:'혼자 사는 게 외롭기도 하고 자유롭기도 해',a:'두 감정이 공존하는 건 네 안에 두 가지 욕구가 있기 때문이야. 어느 쪽이 더 커?'},
+  {q:'재테크 어떻게 시작해',a:'돈의 흐름을 먼저 봐. 들어오는 것, 나가는 것. 구조 없이는 아무것도 안 자라.'},
+  {q:'몸이 자꾸 아파',a:'몸이 보내는 신호는 전부 이유가 있어. 무시하면 더 크게 말해.'},
+  {q:'발표가 너무 두려워',a:'두려움의 본질이 뭔지 봐. 틀릴까봐야, 보여지는 게 무서운 거야?'},
+  {q:'인정받고 싶어',a:'인정의 원천이 외부야, 내부야? 외부는 통제 못 해. 내부를 먼저 다져.'},
+  {q:'사람들이 날 이상하게 볼까봐 두려워',a:'이상하게 본다는 기준이 어디서 왔어? 남의 시선이야, 네 기준이야?'},
+  {q:'칭찬을 받아도 기쁘지 않아',a:'기쁘지 않은 이유가 뭐야? 기준이 더 높아졌어, 아니면 지쳐있는 거야?'},
+  {q:'새벽마다 이상한 생각이 들어',a:'새벽은 잡음이 없어서 본질적인 것들이 올라와. 뭐가 나와?'},
+  {q:'나는 왜 이렇게 감정이 많을까',a:'감정이 많은 건 세상을 깊이 느끼는 뿌리가 넓다는 거야.'},
+  {q:'완벽하게 하려다 아무것도 못 해',a:'완벽이라는 기준이 어디서 왔어? 네 거야, 남의 거야?'},
+  {q:'나 자신이 낯설게 느껴져',a:'낯선 건 변하고 있다는 거야. 씨앗이 발아하는 과정에서 껍질이 달라지는 거야.'},
+  {q:'스트레스를 어떻게 풀어야 해',a:'스트레스의 뿌리를 찾아봐. 표면만 긁으면 계속 올라와.'},
+  {q:'10년 뒤의 나를 상상하면 불안해',a:'불안한 건 가능성이 있다는 뜻이야. 없으면 불안하지도 않아.'},
+  {q:'나한테 투자해도 될까',a:'세상에서 가장 확실한 투자야. 네 뿌리를 기르는 거니까.'},
+  {q:'삶의 의미를 모르겠어',a:'의미는 찾는 게 아니야. 심어야 해. 지금 뭘 심고 있어?'},
+  {q:'변화가 너무 두려워',a:'두려운 건 자연스러워. 씨앗도 껍질이 깨질 때 아프지만 그게 성장이야.'},
+  {q:'열심히 하는데 결과가 없어',a:'방향을 봐. 열심히 파는 방향이 맞는지가 더 중요해.'},
+  {q:'나는 왜 이렇게 예민할까',a:'예민함은 안테나가 발달한 거야. 방향만 잘 쓰면 강점이야.'},
+  {q:'뭔가 중요한 걸 놓치고 사는 것 같아',a:'뭘 놓치는 건지 알아? 모르면 먼저 그걸 특정해봐.'},
+  {q:'나 요즘 너무 지쳐',a:'지침의 뿌리가 뭐야? 일이야, 관계야, 아니면 방향 상실이야?'},
+  {q:'혼자가 너무 익숙해졌어',a:'혼자 있을 때 자신과 대화할 수 있으면 힘이야. 근데 연결도 필요해.'},
+  {q:'감사함이 잘 안 느껴져',a:'감사가 안 느껴지는 건 자동화됐기 때문이야. 다시 처음처럼 봐.'},
+  {q:'내 외모가 너무 신경 쓰여',a:'외모에 집중하는 에너지가 어디서 오는지 봐. 비교야, 자기 기준이야?'},
+  {q:'왜 같은 실수를 반복할까',a:'패턴을 봐. 같은 뿌리에서 올라오는 거야. 뿌리를 건드려야 해.'},
+  {q:'나 괜찮은 사람이야?',a:'그 질문을 하는 사람은 이미 답을 알고 있어.'},
+  {q:'중요한 사람에게 솔직하게 말 못 하겠어',a:'말 못 하는 이유가 뭐야? 상처 줄까봐? 아니면 네가 상처받을까봐?'},
+  {q:'나한테 화가 나',a:'화가 나는 건 기대가 있다는 뜻이야. 그 기대가 뭔지 찾아.'}
 ]
 };;
 
@@ -6899,7 +7920,7 @@ function saveChatHistory(memberKey, history) {
 const LANG_PACK = {
   ko: {
     // 메인 화면
-    cta_group:            '전체에게 묻기 →',
+    cta_group:            '전 멤버들에게 물어볼까요? →',
     cta_solo:             (name) => `${name}에게만 묻기 →`,
     question_placeholder: '연애, 진로, 감정... 뭐든 물어보세요 ✨',
     chat_placeholder:     (name) => `${name}에게 메시지...`,
@@ -7541,26 +8562,31 @@ function toggleChatActions() {
 
 function chatActionPhoto() {
   toggleChatActions();
+  const targetMember = currentChatMember;
   closeChatRoom();
-  // Navigate to results screen photo section
-  if (currentChatMember) {
+  if (targetMember) {
     showScreen('screen-results');
     document.getElementById('photoSection').style.display = 'block';
     switchPhotoMode('selfie');
-    selectPhotoMember(currentChatMember);
-    document.getElementById('photoSection').scrollIntoView({ behavior:'smooth' });
+    selectPhotoMember(targetMember);
+    setTimeout(() => {
+      document.getElementById('photoSection').scrollIntoView({ behavior:'smooth' });
+    }, 80);
   }
 }
 
 function chatActionFourcut() {
   toggleChatActions();
+  const targetMember = currentChatMember;
   closeChatRoom();
-  if (currentChatMember) {
+  if (targetMember) {
     showScreen('screen-results');
     document.getElementById('photoSection').style.display = 'block';
     switchPhotoMode('fourcut');
-    selectFourcutMember(currentChatMember);
-    document.getElementById('photoSection').scrollIntoView({ behavior:'smooth' });
+    selectFourcutMember(targetMember);
+    setTimeout(() => {
+      document.getElementById('photoSection').scrollIntoView({ behavior:'smooth' });
+    }, 80);
   }
 }
 

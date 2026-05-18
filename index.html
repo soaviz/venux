@@ -1317,6 +1317,13 @@
         <button class="header-btn" onclick="if(confirm('모든 게임 데이터를 초기화할까요?'))resetGameData()" style="flex:1;text-align:center;color:#e55">🗑️ 초기화</button>
       </div>
     </div>
+    <div style="padding:8px 0 4px">
+      <button onclick="logoutUser()"
+        style="width:100%;padding:14px;border:1.5px solid rgba(229,85,85,0.3);border-radius:14px;background:rgba(229,85,85,0.05);color:#e55;font-size:14px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em"
+        onmouseover="this.style.background='rgba(229,85,85,0.1)'" onmouseout="this.style.background='rgba(229,85,85,0.05)'">
+        로그아웃
+      </button>
+    </div>
     <!-- hidden admin entry — 관리자 전용 -->
     <div style="margin-top:32px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.06)">
       <div onclick="toggleAdminEntry()" style="text-align:center;cursor:pointer;user-select:none">
@@ -4345,6 +4352,16 @@ function exportGameData() {
   showToast('백업 파일 다운로드됨 📦');
 }
 
+function logoutUser() {
+  if (!confirm('로그아웃하면 닉네임과 게임 데이터가 초기화됩니다.\nAPI 키와 대화 기록은 유지됩니다.\n\n로그아웃할까요?')) return;
+  // 게임 DB + 채팅 기록 초기화 (API 키 · user_id · 연구동의 유지)
+  const keepKeys = ['venux_openai_key', 'venux_ai_model', 'venux_user_id', 'venux_research_consent'];
+  const saved = {};
+  keepKeys.forEach(k => { saved[k] = localStorage.getItem(k); });
+  localStorage.clear();
+  keepKeys.forEach(k => { if (saved[k] !== null) localStorage.setItem(k, saved[k]); });
+  location.reload();
+}
 function resetGameData() {
   localStorage.removeItem(DB_KEY);
   location.reload();

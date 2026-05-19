@@ -1789,69 +1789,56 @@
       text-transform: uppercase;
     }
 
-    /* === Member row → signal cards (SQUARE) === */
+    /* === Member row → SQUARE full-bleed thumbnails (no border, no padding) === */
     .member-row {
       display: grid !important;
       grid-template-columns: repeat(5, 1fr) !important;
-      gap: 8px !important;
-      padding: 14px 14px 8px !important;
+      gap: 6px !important;
+      padding: 12px 12px 6px !important;
     }
     .member-item {
       display: flex !important;
       flex-direction: column !important;
       align-items: stretch !important;
       gap: 0 !important;
-      padding: 8px 6px 8px !important;
-      background: rgba(255,255,255,0.025);
-      border: 1px solid var(--vx-line);
-      border-radius: 10px;
-      transition: all .25s var(--vx-ease);
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      transition: transform .2s var(--vx-ease);
       position: relative;
-      overflow: hidden;
+      overflow: visible;
+      cursor: pointer;
     }
-    .member-item::before {
-      content:''; position:absolute; top:0; left:0; right:0; height:2px;
-      background: linear-gradient(90deg, transparent, var(--member-accent, var(--vx-signal)), transparent);
-      opacity:.7;
-    }
+    .member-item::before { content: none !important; }
+    .member-item::after { content: none !important; }
     .member-item:hover {
-      background: rgba(199,125,255,0.07);
-      border-color: var(--member-accent, var(--vx-line-strong));
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px color-mix(in srgb, var(--member-accent,var(--vx-signal)) 25%, transparent);
+      transform: translateY(-1px);
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
     }
-    /* SQUARE thumbnail — full-frame portrait */
+    .member-item:active { transform: scale(0.97); }
+
+    /* SQUARE thumbnail — full cell, no border, photo dominant */
     .member-circle {
       width: 100% !important;
       aspect-ratio: 1 / 1 !important;
       height: auto !important;
-      max-width: 64px !important;
-      margin: 0 auto 8px !important;
+      max-width: none !important;
+      margin: 0 0 6px !important;
       border-radius: 10px !important;
-      background: linear-gradient(135deg, color-mix(in srgb, var(--member-accent,var(--vx-signal)) 70%, #000), color-mix(in srgb, var(--member-accent,var(--vx-signal)) 30%, #000)) !important;
-      box-shadow:
-        0 0 18px color-mix(in srgb, var(--member-accent,var(--vx-signal)) 45%, transparent),
-        0 4px 16px rgba(0,0,0,0.4),
-        inset 0 0 0 1px rgba(255,255,255,0.08) !important;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--member-accent,var(--vx-signal)) 60%, #000), color-mix(in srgb, var(--member-accent,var(--vx-signal)) 20%, #000)) !important;
+      box-shadow: none !important;
+      border: none !important;
       position: relative;
       overflow: hidden !important;
     }
-    /* Top-left corner bracket — HUD signature */
-    .member-circle::before {
-      content:''; position:absolute; top:4px; left:4px; width:8px; height:8px;
-      border-top:1.2px solid var(--member-accent,var(--vx-signal));
-      border-left:1.2px solid var(--member-accent,var(--vx-signal));
-      opacity:.8; z-index:2; pointer-events:none;
-    }
-    .member-circle::after {
-      content:''; position:absolute; bottom:4px; right:4px; width:8px; height:8px;
-      border-bottom:1.2px solid var(--member-accent,var(--vx-signal));
-      border-right:1.2px solid var(--member-accent,var(--vx-signal));
-      opacity:.8; z-index:2; pointer-events:none;
-    }
-    /* Override JS-injected 50% border-radius on the <img> */
+    .member-circle::before { content: none !important; }
+    .member-circle::after  { content: none !important; }
+
     .member-circle img {
-      border-radius: 9px !important;
+      border-radius: 10px !important;
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
@@ -2492,6 +2479,109 @@
     }
 
     /* ================================================== */
+    /* DIARY (다이어리) — 멤버 일기장 다크 통일 */
+    /* ================================================== */
+    .diary-entry-row {
+      background: linear-gradient(180deg, rgba(20,24,40,0.6), rgba(15,18,30,0.6)) !important;
+      border: 1px solid var(--vx-line) !important;
+      border-radius: 10px !important;
+      backdrop-filter: blur(8px);
+      transition: all .2s var(--vx-ease) !important;
+    }
+    .diary-entry-row:active,
+    .diary-entry-row.diary-open {
+      background: linear-gradient(180deg, rgba(199,125,255,0.10), rgba(255,94,224,0.06)) !important;
+      border-color: rgba(199,125,255,0.30) !important;
+    }
+    .diary-entry-row.diary-locked { opacity: 0.4 !important; }
+
+    .diary-title {
+      color: #FFFFFF !important;
+      font-family: var(--vx-font-display) !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+    }
+    .diary-date {
+      color: var(--vx-text-3) !important;
+      font-family: var(--vx-font-mono) !important;
+      font-size: 10px !important;
+      letter-spacing: 0.08em !important;
+    }
+    .diary-preview {
+      color: var(--vx-text-2) !important;
+      opacity: 0.85;
+    }
+    .diary-chevron { color: var(--vx-signal-2) !important; opacity: 0.7; }
+    .diary-body {
+      color: var(--vx-text-2) !important;
+      font-family: var(--vx-font-body) !important;
+    }
+    .diary-mood { filter: saturate(1.1); }
+
+    /* Diary list header — "신지우의 일기장 / LV 1 · 6/20편 해금" */
+    [class*="diary-list-header"], [class*="diary-header"], .diary-title-area {
+      color: var(--vx-text) !important;
+    }
+
+    /* Diary pager — 좌/우 이동 */
+    .vx-diary-pager {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; padding: 14px 12px 6px;
+    }
+    .vx-pg-btn {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--vx-line);
+      border-radius: 8px;
+      color: var(--vx-text);
+      cursor: pointer;
+      transition: all .15s var(--vx-ease);
+      backdrop-filter: blur(6px);
+    }
+    .vx-pg-btn:hover {
+      background: rgba(199,125,255,0.14);
+      border-color: var(--vx-signal);
+      color: var(--vx-signal-2);
+      box-shadow: 0 0 14px rgba(199,125,255,0.30);
+    }
+    .vx-pg-btn:active { transform: scale(0.94); }
+    .vx-pg-btn:disabled {
+      opacity: 0.35; cursor: not-allowed;
+      background: rgba(255,255,255,0.02);
+    }
+    .vx-pg-btn:disabled:hover {
+      background: rgba(255,255,255,0.02);
+      border-color: var(--vx-line);
+      color: var(--vx-text);
+      box-shadow: none;
+    }
+    .vx-pg-info {
+      font-family: var(--vx-font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: #FFFFFF;
+      min-width: 60px;
+      text-align: center;
+    }
+    .vx-pg-info .vx-pg-sep { color: var(--vx-text-4); margin: 0 4px; }
+
+    /* ================================================== */
+    /* LETTER HISTORY — 편지 히스토리 다크 통일 */
+    /* ================================================== */
+    .letter-history-item {
+      background: linear-gradient(180deg, rgba(20,24,40,0.6), rgba(15,18,30,0.6)) !important;
+      border: 1px solid var(--vx-line) !important;
+      color: var(--vx-text-2) !important;
+      backdrop-filter: blur(6px);
+    }
+    .letter-history-date {
+      color: var(--vx-text-4) !important;
+      font-family: var(--vx-font-mono) !important;
+      letter-spacing: 0.08em !important;
+    }
+
+    /* ================================================== */
     /* CHAT SCREEN — full dark tone-down (1:1 멤버 대화) */
     /* ================================================== */
     .chat-header {
@@ -2513,6 +2603,31 @@
     .chat-header-btn { color: var(--vx-text-2) !important; }
     .chat-header-btn:hover { color: var(--vx-text) !important; }
     .chat-header-portrait { border: 1px solid var(--vx-line-strong) !important; box-shadow: 0 0 12px rgba(199,125,255,0.18); }
+
+    /* Back arrow — 화이트 + 핑크 글로우, 잘 보이게 */
+    .chat-back, .chat-header .chat-back, .chat-header button.chat-back {
+      color: #FFFFFF !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 8px !important;
+      background: rgba(255,255,255,0.04) !important;
+      border: 1px solid var(--vx-line) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 20px !important;
+      transition: all .15s var(--vx-ease) !important;
+      backdrop-filter: blur(6px);
+    }
+    .chat-back:hover {
+      background: rgba(199,125,255,0.14) !important;
+      border-color: var(--vx-line-strong) !important;
+      color: var(--vx-signal-2) !important;
+    }
+    .chat-back:active { transform: scale(0.94); }
+
+    /* If the arrow is text (←) make it pulse-readable. If SVG, force white stroke. */
+    .chat-back svg { stroke: #FFFFFF !important; fill: none !important; }
 
     /* Body — show cosmic bg through */
     .chat-body { background: transparent !important; }
@@ -8727,6 +8842,9 @@ function flipCard(id) {
 // ============================================================
 // DIARY TAB RENDER
 // ============================================================
+window._vxDiaryPage = window._vxDiaryPage || {};
+const VX_DIARY_PAGE_SIZE = 5;
+
 function renderDiaryTab(key) {
   const m = memberData[key];
   const db = getOrCreateDB();
@@ -8736,7 +8854,17 @@ function renderDiaryTab(key) {
   const el = document.getElementById('profileTab-letter-' + key);
   if (!el) return;
 
-  const listHtml = entries.map(entry => {
+  // 페이지네이션 — 5개씩
+  const PER = VX_DIARY_PAGE_SIZE;
+  const totalPages = Math.max(1, Math.ceil(entries.length / PER));
+  let page = window._vxDiaryPage[key] || 0;
+  if (page >= totalPages) page = totalPages - 1;
+  if (page < 0) page = 0;
+  window._vxDiaryPage[key] = page;
+  const start = page * PER;
+  const visible = entries.slice(start, start + PER);
+
+  const listHtml = visible.map(entry => {
     const locked = entry.minLevel > myLevel;
     return `
     <div class="diary-entry-row ${locked ? 'diary-locked' : ''}"
@@ -8754,6 +8882,18 @@ function renderDiaryTab(key) {
       <div class="diary-content" id="diary-content-${entry.id}" style="display:none"></div>
     </div>`;
   }).join('');
+
+  // ◀ ▶ 페이지 컨트롤
+  const pagerHtml = totalPages > 1 ? `
+    <div class="vx-diary-pager">
+      <button class="vx-pg-btn" ${page === 0 ? 'disabled' : ''} onclick="vxDiaryGo('${key}', -1)" aria-label="prev">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="vx-pg-info">${page+1} <span class="vx-pg-sep">/</span> ${totalPages}</span>
+      <button class="vx-pg-btn" ${page >= totalPages-1 ? 'disabled' : ''} onclick="vxDiaryGo('${key}', 1)" aria-label="next">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>` : '';
 
   // 편지 쓰기 섹션 (하단 compact)
   const letterSection = `
@@ -8786,11 +8926,22 @@ function renderDiaryTab(key) {
       </div>
       <div style="height:1px;background:rgba(0,0,0,0.07);margin:0 12px 12px"></div>
       ${listHtml}
+      ${pagerHtml}
       <div style="height:1px;background:rgba(0,0,0,0.07);margin:12px 12px 14px"></div>
       ${letterSection}
     </div>`;
 
   renderLetterHistory(key);
+}
+
+function vxDiaryGo(key, delta) {
+  window._vxDiaryPage = window._vxDiaryPage || {};
+  const cur = window._vxDiaryPage[key] || 0;
+  window._vxDiaryPage[key] = cur + delta;
+  renderDiaryTab(key);
+  // 스크롤 일기장 헤더로
+  const el = document.getElementById('profileTab-letter-' + key);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function toggleDiaryEntry(key, id) {
@@ -9526,7 +9677,8 @@ const LETTER_TEMPLATES = {
 // ============================================================
 function switchProfileTab(tabId, memberKey) {
   const sheet = document.getElementById('profileSheet');
-  const tabOrder = ['info','photo','chat','letter'];
+  // 탭 순서: 프로필 · 인별그램 · 포토카드 · 다이어리
+  const tabOrder = ['info','photo','card','letter'];
   sheet.querySelectorAll('.profile-inner-tab').forEach((tab, i) => {
     tab.classList.toggle('active', tabOrder[i] === tabId);
   });

@@ -2482,17 +2482,7 @@
       border-radius: 999px !important;
     }
 
-    /* Generic dark-on-purple text safety for anything we missed inside the profile sheet */
-    .profile-overlay, .profile-overlay *:not(.profile-band):not(.profile-portrait):not(img):not(svg):not(.ig-action-btn):not(.cta-btn) {
-      /* gentle fallback so stray dark text becomes readable */
-    }
-    .profile-overlay [style*="color:#0A0A0A"],
-    .profile-overlay [style*="color:#111"],
-    .profile-overlay [style*="color:#222"],
-    .profile-overlay [style*="color:#333"],
-    .profile-overlay [style*="color:#444"],
-    .profile-overlay [style*="color:#555"],
-    .profile-overlay [style*="color:#000"] { color: #FFFFFF !important; }
+    /* (removed heavy attribute selectors — replaced by component-level overrides above) */
 
     /* Close (×) icon if present */
     .profile-close, .profile-overlay button[aria-label="close"], .profile-overlay .close-btn {
@@ -2616,11 +2606,7 @@
       color: var(--vx-text-2) !important;
     }
 
-    /* Force dark text safety inside chat */
-    .chat-header [style*="color:#000"], .chat-header [style*="color:#111"], .chat-header [style*="color:#222"], .chat-header [style*="color:#333"],
-    .chat-bubble [style*="color:#000"], .chat-bubble [style*="color:#111"], .chat-bubble [style*="color:#222"], .chat-bubble [style*="color:#333"] {
-      color: #FFFFFF !important;
-    }
+    /* (removed heavy attribute selectors — chat colors handled by .chat-* classes above) */
 
     /* ================================================== */
     /* RESULTS SCREEN — 멤버 답변 카드 전면 다크 통일 */
@@ -2920,33 +2906,10 @@
     }
 
     /* ================================================== */
-    /* GLOBAL safety override — any leftover dark text on dark bg → white */
+    /* GLOBAL safety override — removed heavy [style*=...] selectors */
+    /* (메모리 누수·렌더링 부담 방지 위해 광범위 selector 비활성화) */
+    /* 잔존 라이트 잔재는 컴포넌트별 .* override로 처리 */
     /* ================================================== */
-    .screen [style*="color:#0A0A0A"],
-    .screen [style*="color:#111"],
-    .screen [style*="color:#222"],
-    .screen [style*="color:#333"],
-    .screen [style*="color:#444"],
-    .screen [style*="color:#555"],
-    .screen [style*="color:#000"] {
-      color: #FFFFFF !important;
-    }
-    .screen [style*="color:#666"],
-    .screen [style*="color:#888"],
-    .screen [style*="color:#999"],
-    .screen [style*="color:#aaa"],
-    .screen [style*="color:#bbb"] {
-      color: var(--vx-text-3) !important;
-    }
-    .screen [style*="background:white"],
-    .screen [style*="background:#fff"],
-    .screen [style*="background:#FFF"],
-    .screen [style*="background: white"],
-    .screen [style*="background: #fff"],
-    .screen [style*="background: #FFF"] {
-      background: var(--vx-panel) !important;
-      color: #FFFFFF !important;
-    }
 
     /* ================================================== */
     /* PHOTO SCREEN — 사진 첩 + 사진찍기 서브탭 (NEW) */
@@ -3748,10 +3711,13 @@ function vxCamShoot(){
   var OFS  = document.getElementById('vxBootOfs');
   if(!WRAP) return;
 
-  var MAX_LINES = 7;
+  var MAX_LINES = 6;
+  var HARD_CAP = 12;       // absolute safety net
   var idx = 0;
   var cycle = 1;
   var offset = 0x462C00;
+  var _loopTimer = null;
+  var _isHidden = false;
 
   function nextLine(){
     var line = POOL[idx % POOL.length];
@@ -3761,7 +3727,7 @@ function vxCamShoot(){
   }
 
   function addLine(){
-    if(!WRAP) return;
+    if(!WRAP || _isHidden) return;
     var div = document.createElement('div');
     div.className = 'vx-boot-line';
     div.innerHTML = nextLine().replace("id='vxCycle'>1<", "id='vxCycle'>"+cycle+"<");
@@ -3771,25 +3737,44 @@ function vxCamShoot(){
     offset += (Math.floor(Math.random()*40) + 8);
     if(OFS) OFS.textContent = '0x' + offset.toString(16).toUpperCase().padStart(6,'0');
 
-    // Remove oldest if too many
+    // Immediate remove — no deferred setTimeout (메모리 누수 방지)
     while(WRAP.children.length > MAX_LINES){
-      var old = WRAP.firstElementChild;
-      old.classList.add('fade-out');
-      setTimeout(function(o){ if(o && o.parentNode) o.parentNode.removeChild(o); }.bind(null, old), 240);
+      WRAP.removeChild(WRAP.firstElementChild);
+    }
+    // Hard cap safety net — if anything ever leaks, force-trim
+    if(WRAP.children.length > HARD_CAP){
+      while(WRAP.children.length > MAX_LINES){
+        WRAP.removeChild(WRAP.firstElementChild);
+      }
     }
   }
 
   // Seed
-  for(var i=0; i<4; i++) addLine();
+  for(var i=0; i<3; i++) addLine();
 
   // Stream — variable cadence for "vibe coding" feel
   function loop(){
+    if(_isHidden) return;
     addLine();
-    var delay = 700 + Math.random() * 1100;     // 0.7–1.8s
-    if(Math.random() < 0.08) delay += 600;       // occasional pause
-    setTimeout(loop, delay);
+    var delay = 1000 + Math.random() * 1400;   // 1.0–2.4s (slowed)
+    _loopTimer = setTimeout(loop, delay);
   }
-  setTimeout(loop, 600);
+  _loopTimer = setTimeout(loop, 800);
+
+  // Pause when tab/window hidden — prevents background memory growth
+  document.addEventListener('visibilitychange', function(){
+    _isHidden = document.hidden;
+    if(_isHidden){
+      if(_loopTimer){ clearTimeout(_loopTimer); _loopTimer = null; }
+    } else {
+      if(!_loopTimer){ _loopTimer = setTimeout(loop, 500); }
+    }
+  });
+  // Also stop on pagehide (iOS Safari bfcache)
+  window.addEventListener('pagehide', function(){
+    _isHidden = true;
+    if(_loopTimer){ clearTimeout(_loopTimer); _loopTimer = null; }
+  });
 })();
 </script>
 

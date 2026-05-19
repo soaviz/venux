@@ -680,15 +680,7 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     p, label, span, div, li { color: var(--vx-text-2); }
 
-    /* Force readable text on previously dark colors */
-    [style*="color:#0A0A0A"], [style*="color:#111"], [style*="color:#222"], [style*="color:#333"],
-    [style*="color:#444"], [style*="color:#555"], [style*="color:#000"] { color: #FFFFFF !important; }
-    [style*="color:#666"], [style*="color:#888"], [style*="color:#999"],
-    [style*="color:#aaa"], [style*="color:#bbb"] { color: var(--vx-text-3) !important; }
-    [style*="background:white"], [style*="background:#fff"], [style*="background:#FFF"],
-    [style*="background: white"], [style*="background: #fff"] {
-      background: rgba(15,18,30,0.7) !important; color: var(--vx-text) !important;
-    }
+    /* (removed heavy [style*=...] attribute selectors — memory/perf concern) */
 
     /* Inputs */
     input[type="text"], input[type="email"], input[type="password"], input[type="number"],

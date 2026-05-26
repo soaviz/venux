@@ -464,6 +464,7 @@
     /* ── PHOTOCARD GRID ── */
     .pc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:0; }
     .pc-card-wrap { perspective:700px; cursor:pointer; }
+    .pc-card-wrap.pc-locked { cursor:default; }
     .pc-card { position:relative; width:100%; padding-top:142%; transform-style:preserve-3d; transition:transform 0.6s cubic-bezier(0.23,1,0.32,1); border-radius:0; }
     .pc-card.flipped { transform:rotateY(180deg); }
     .pc-front, .pc-back { position:absolute; inset:0; border-radius:0; backface-visibility:hidden; overflow:hidden; }
@@ -487,41 +488,39 @@
     .pc-card-wrap[data-rarity="SSR"] .pc-holo,
     .pc-card-wrap[data-rarity="UR"]  .pc-holo { opacity:1; }
 
-    /* ── GLITCH LOCKED STATE ── */
-    @keyframes pcGlitchImg {
-      0%,84%   { transform:translate(0,0); clip-path:none; }
-      85%      { transform:translate(-3px,0); clip-path:inset(8% 0 88% 0); }
-      86%      { transform:translate(3px,1px); clip-path:inset(60% 0 28% 0); }
-      87%      { transform:translate(0,0); clip-path:none; }
-      92%      { transform:translate(0,0); clip-path:none; }
-      93%      { transform:translate(2px,-1px); clip-path:inset(33% 0 55% 0); }
-      94%      { transform:translate(-2px,0); clip-path:inset(74% 0 14% 0); }
-      95%,100% { transform:translate(0,0); clip-path:none; }
+    /* ── GLITCH LOCKED STATE — subtle ── */
+    @keyframes pcJitter {
+      0%,96%,100% { transform:translate(0,0); }
+      97%          { transform:translate(-1px,0); }
+      98%          { transform:translate(1px,0); }
+      99%          { transform:translate(0,0); }
     }
-    @keyframes pcGlitchFlicker { 0%,83%,100%{opacity:1} 84%{opacity:.5} 86%{opacity:.9} 88%{opacity:.3} 90%{opacity:.95} }
+    @keyframes pcRgbR {
+      0%,95%,100% { opacity:0; transform:translate(0,0); }
+      96%          { opacity:0.18; transform:translate(2px,0); }
+      97%          { opacity:0.12; transform:translate(-2px,0); }
+      98%          { opacity:0; }
+    }
+    @keyframes pcRgbC {
+      0%,95%,100% { opacity:0; transform:translate(0,0); }
+      96%          { opacity:0.14; transform:translate(-2px,0); }
+      97%          { opacity:0.10; transform:translate(2px,0); }
+      98%          { opacity:0; }
+    }
     @keyframes pcScanMove { from{background-position:0 0} to{background-position:0 4px} }
-    @keyframes pcLockText {
-      0%,84%,100% { letter-spacing:.16em; text-shadow:none; opacity:1; }
-      85%  { letter-spacing:.22em; text-shadow:2px 0 #ff003c,-2px 0 #00e5ff; opacity:.9; }
-      87%  { letter-spacing:.10em; text-shadow:-2px 0 #ff003c,2px 0 #00e5ff; opacity:1; }
-      89%  { letter-spacing:.16em; text-shadow:none; }
-    }
-    @keyframes pcGlitchR { 0%,84%,100%{opacity:0;transform:translate(0)} 85%,87%{opacity:.3;transform:translate(4px,0)} 86%{opacity:.4;transform:translate(-4px,0)} }
-    @keyframes pcGlitchC { 0%,84%,100%{opacity:0;transform:translate(0)} 85%{opacity:.28;transform:translate(-3px,0)} 86%,87%{opacity:.32;transform:translate(3px,0)} }
+    @keyframes pcLockFade { 0%,90%,100%{opacity:.65} 92%{opacity:.35} 95%{opacity:.65} }
 
-    .pc-locked .pc-img-wrap img { filter:saturate(0) brightness(0.45)!important; animation:pcGlitchImg 2.8s steps(1) infinite; }
+    .pc-locked .pc-img-wrap img { filter:saturate(0) brightness(0.48)!important; animation:pcJitter 4s steps(1) infinite; }
 
-    /* glitch overlay */
-    .pc-glitch-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; animation:pcGlitchFlicker 2.8s steps(1) infinite; }
-    /* scanlines */
-    .pc-glitch-overlay::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.18) 2px,rgba(0,0,0,0.18) 4px); background-size:100% 4px; animation:pcScanMove 0.5s linear infinite; pointer-events:none; }
-    /* RGB red channel */
-    .pc-glitch-r { position:absolute; inset:0; background:rgba(255,0,60,0.07); mix-blend-mode:screen; animation:pcGlitchR 2.8s steps(1) infinite; pointer-events:none; }
-    /* RGB cyan channel */
-    .pc-glitch-c { position:absolute; inset:0; background:rgba(0,229,255,0.07); mix-blend-mode:screen; animation:pcGlitchC 2.8s steps(1) infinite; pointer-events:none; }
-    /* lock text */
-    .pc-lock-label { font-family:'JetBrains Mono',monospace; font-size:8px; font-weight:800; letter-spacing:.16em; color:rgba(255,255,255,0.72); text-transform:uppercase; animation:pcLockText 2.8s steps(1) infinite; text-shadow:0 0 8px rgba(255,255,255,0.3); position:relative; z-index:2; }
-    .pc-lock-bar { width:18px; height:1px; background:rgba(255,255,255,0.3); margin:5px auto 0; position:relative; z-index:2; }
+    .pc-glitch-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+    /* 미세 스캔라인 */
+    .pc-glitch-overlay::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.10) 3px,rgba(0,0,0,0.10) 4px); background-size:100% 4px; animation:pcScanMove 1.2s linear infinite; }
+    /* RGB — 거의 안 보이는 수준 */
+    .pc-glitch-r { position:absolute; inset:0; background:rgba(255,30,60,0.06); mix-blend-mode:screen; animation:pcRgbR 4s steps(1) infinite; }
+    .pc-glitch-c { position:absolute; inset:0; background:rgba(0,220,255,0.06); mix-blend-mode:screen; animation:pcRgbC 4s steps(1) infinite; }
+    /* lock 텍스트 */
+    .pc-lock-label { font-family:'JetBrains Mono',monospace; font-size:8px; font-weight:700; letter-spacing:.16em; color:rgba(255,255,255,0.6); text-transform:uppercase; animation:pcLockFade 4s ease infinite; position:relative; z-index:2; }
+    .pc-lock-bar { width:16px; height:1px; background:rgba(255,255,255,0.22); margin:4px auto 0; position:relative; z-index:2; }
 
     /* ── BACK ── */
     .pc-back { transform:rotateY(180deg); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 10px; text-align:center; background:#07070F; }
@@ -9450,7 +9449,9 @@ function renderCardTab(key) {
         <!-- 앞면 -->
         <div class="pc-front">
           <div class="pc-img-wrap">
-            <img src="${m.photo}" alt="${m.name}" style="filter:${card.filter}">
+            <img src="photocards/${key.split('-')[0]}/${card.id}.png" alt="${card.title}"
+                 onerror="this.closest('.pc-card-wrap').style.display='none'"
+                 style="filter:${card.filter}">
             <div class="pc-img-overlay"></div>
             <div class="pc-holo"></div>
             <div class="pc-rarity-badge" style="color:${r.color}">${r.label}</div>
@@ -9497,6 +9498,8 @@ function renderCardTab(key) {
 }
 
 function flipCard(id) {
+  const wrap = document.querySelector(`.pc-card-wrap[onclick*="${id}"]`);
+  if (wrap && wrap.classList.contains('pc-locked')) return;
   const el = document.getElementById('pc-' + id);
   if (el) el.classList.toggle('flipped');
 }

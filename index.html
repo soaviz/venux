@@ -533,7 +533,7 @@
     /* ABOUT MODAL */
     .about-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,8,24,0.55); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:1000; opacity:0; pointer-events:none; transition:opacity 0.3s; display:flex; align-items:center; justify-content:center; }
     .about-overlay.show { opacity:1; pointer-events:auto; }
-    .about-card { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14); backdrop-filter:blur(32px); -webkit-backdrop-filter:blur(32px); border-radius:24px; padding:36px 28px 28px; max-width:340px; width:90%; text-align:center; transform:scale(0.92) translateY(12px); transition:transform 0.35s cubic-bezier(0.32,0.72,0,1); box-shadow:0 24px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+    .about-card { position:relative; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14); backdrop-filter:blur(32px); -webkit-backdrop-filter:blur(32px); border-radius:24px; padding:36px 28px 28px; max-width:340px; width:90%; text-align:center; transform:scale(0.92) translateY(12px); transition:transform 0.35s cubic-bezier(0.32,0.72,0,1); box-shadow:0 24px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
     .about-overlay.show .about-card { transform:scale(1) translateY(0); }
     .about-title { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:.06em; color:#fff; margin-bottom:6px; }
     .about-subtitle { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.18em; color:rgba(167,139,250,.7); text-transform:uppercase; margin-bottom:24px; }
@@ -546,8 +546,8 @@
     .about-divider { height:1px; background:rgba(255,255,255,.08); margin:20px 0; }
     .about-footer { font-size:11px; color:rgba(255,255,255,.35); line-height:2.0; letter-spacing:.02em; }
     .about-footer a { color:rgba(167,139,250,.8); text-decoration:none; }
-    .about-close { margin-top:24px; width:100%; padding:13px; border:1px solid rgba(255,255,255,.15); border-radius:14px; background:rgba(107,91,214,.25); color:rgba(255,255,255,.9); font-size:14px; font-weight:600; font-family:'Noto Sans KR',sans-serif; cursor:pointer; letter-spacing:.04em; transition:background .15s; }
-    .about-close:active { background:rgba(107,91,214,.45); }
+    .about-x { position:absolute; top:14px; right:14px; width:30px; height:30px; border:1px solid rgba(255,255,255,.15); border-radius:50%; background:rgba(255,255,255,.08); color:rgba(255,255,255,.6); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+    .about-x:active { background:rgba(255,255,255,.18); }
 
     /* ============================================ */
     /* MOBILE RESPONSIVE (max-width: 768px)        */
@@ -1118,6 +1118,34 @@
         width:480px;
         border-left:1px solid #e5e5e5;
         border-right:1px solid #e5e5e5;
+      }
+
+      /* ── About 모달: 동일 컬럼 안에서 ── */
+      .about-overlay {
+        left:50%;
+        transform:translateX(-50%);
+        width:480px;
+        max-width:480px;
+      }
+
+      /* ── 공유 시트: 동일 컬럼 안에서 ── */
+      .share-sheet-overlay {
+        left:50%;
+        transform:translateX(-50%);
+        width:480px;
+        max-width:480px;
+      }
+      .share-sheet {
+        left:50%;
+        right:auto;
+        transform:translateX(-50%) translateY(100%);
+        width:480px;
+        max-width:480px;
+        border-left:1px solid rgba(255,255,255,0.08);
+        border-right:1px solid rgba(255,255,255,0.08);
+      }
+      .share-sheet.open {
+        transform:translateX(-50%) translateY(0);
       }
 
       /* ── 일반 모달 (온보딩 등): 동일 컬럼 안에서 ── */
@@ -3605,6 +3633,7 @@
 <!-- ABOUT MODAL -->
 <div class="about-overlay" id="aboutModal" onclick="if(event.target===this)closeAbout()">
   <div class="about-card">
+    <button class="about-x" onclick="closeAbout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <div class="about-title">VenuX · ALEKA</div>
     <div class="about-subtitle">5 signals · 5 frequencies · 1 truth</div>
     <div class="about-text">5명의 멤버가 당신의 고민에<br>각자의 철학으로 답합니다.</div>
@@ -3640,7 +3669,6 @@
       Built by SOAVIZ AI STUDIO<br>
       문의 · <a href="mailto:ai@soaviz.com">ai@soaviz.com</a>
     </div>
-    <button class="about-close" onclick="closeAbout()">닫기</button>
   </div>
 </div>
 

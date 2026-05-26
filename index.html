@@ -379,14 +379,14 @@
     /* 포스트 상세 오버레이 */
     .post-detail-overlay { position:fixed;inset:0;z-index:9999;background:#fff;display:none;flex-direction:column;overflow-y:auto; }
     .post-detail-overlay.show { display:flex; }
-    .post-detail-header { display:flex;align-items:center;padding:14px 10px 12px;gap:8px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5) 0%,transparent 100%);position:absolute;top:0;left:0;right:0;z-index:10; }
-    .post-detail-back { width:36px;height:36px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:0;flex-shrink:0;padding:0;color:#fff;-webkit-tap-highlight-color:transparent; }
-    .post-detail-avatar { width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,0.9);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s; }
+    .post-detail-header { display:flex;align-items:center;padding:12px 10px 11px;gap:8px;flex-shrink:0;background:#fff;border-bottom:1px solid rgba(0,0,0,0.07);position:relative;z-index:10; }
+    .post-detail-back { width:36px;height:36px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:0;flex-shrink:0;padding:0;color:#262626;-webkit-tap-highlight-color:transparent; }
+    .post-detail-avatar { width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(107,91,214,0.35);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s; }
     .post-detail-avatar:active { opacity:0.7; }
     .post-detail-userinfo { flex:1;display:flex;flex-direction:column;gap:1px; }
-    .post-detail-username { font-size:13px;font-weight:700;color:#fff;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.6); }
-    .post-detail-id { font-size:11px;color:rgba(255,255,255,0.85);line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.6); }
-    .post-detail-more { font-size:20px;color:#fff;border:none;background:none;cursor:pointer;padding:0 2px;letter-spacing:1px;text-shadow:0 1px 3px rgba(0,0,0,0.6); }
+    .post-detail-username { font-size:13px;font-weight:700;color:#262626;line-height:1.2; }
+    .post-detail-id { font-size:11px;color:#999;line-height:1.2; }
+    .post-detail-more { font-size:20px;color:#262626;border:none;background:none;cursor:pointer;padding:0 2px;letter-spacing:1px; }
     .post-detail-img { width:100%;aspect-ratio:1;object-fit:cover;flex-shrink:0; }
     /* 스와이프 래퍼 */
     .post-img-swipe-wrap { position:relative;width:100%;aspect-ratio:1;overflow:hidden;flex-shrink:0; }
@@ -2558,7 +2558,11 @@
     .post-detail-overlay { background: #07090F !important; color: var(--vx-text) !important; }
     .settings-saved-title { color: var(--vx-text) !important; }
     .settings-saved-section { border-top-color: rgba(255,255,255,0.08) !important; }
-    .post-detail-header { background: rgba(10,12,22,0.92) !important; border-bottom: 1px solid var(--vx-line) !important; }
+    .post-detail-header { background: var(--vx-card) !important; border-bottom: 1px solid var(--vx-line) !important; }
+    body.dark-mode .post-detail-username { color: #FFFFFF !important; }
+    body.dark-mode .post-detail-id { color: var(--vx-text-3) !important; }
+    body.dark-mode .post-detail-back { color: #FFFFFF !important; }
+    body.dark-mode .post-detail-more { color: #FFFFFF !important; }
     .post-detail-username, .post-like-count, .post-caption, .post-caption strong { color: #FFFFFF !important; }
     .post-save-btn svg path { stroke: rgba(255,255,255,0.85); }
     .post-save-btn svg[data-saved="true"] path { stroke: #8B7FE8 !important; fill: #8B7FE8 !important; }
@@ -9610,18 +9614,18 @@ function _buildPostDetailHtml(post, m, key, idx, total) {
     ).join('')
   }</div>` : '';
   return `
-    <div class="post-img-swipe-wrap" id="postSwipeWrap">
-      <div class="post-detail-header">
-        <button class="post-detail-back" onclick="closePostDetail()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="22" height="22" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <img class="post-detail-avatar" src="${m.photo}" alt="${m.name}" onclick="closePostDetail();switchProfileTab('photo','${key}')" title="${m.name}">
-        <div class="post-detail-userinfo">
-          <div class="post-detail-username">${m.name}</div>
-          <div class="post-detail-id">${key.toLowerCase().replace('-','_')}</div>
-        </div>
-        <button class="post-detail-more">···</button>
+    <div class="post-detail-header">
+      <button class="post-detail-back" onclick="closePostDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="22" height="22" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <img class="post-detail-avatar" src="${m.photo}" alt="${m.name}" onclick="closePostDetail();switchProfileTab('photo','${key}')" title="${m.name}">
+      <div class="post-detail-userinfo">
+        <div class="post-detail-username">${m.name}</div>
+        <div class="post-detail-id">${key.toLowerCase().replace('-','_')}</div>
       </div>
+      <button class="post-detail-more">···</button>
+    </div>
+    <div class="post-img-swipe-wrap" id="postSwipeWrap">
       <img id="postSwipeImg" src="${post.image || m.photo}" onerror="this.onerror=null;this.src='${m.photo}'" alt="${m.name}" style="filter:${post.filter}">
       <button class="post-nav-btn prev${idx === 0 ? ' hidden' : ''}" id="postNavPrev" onclick="_navPostDetail(-1)">
         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -9852,6 +9856,32 @@ function setSavedPosts(arr) {
   localStorage.setItem('venux_saved_posts', JSON.stringify(arr));
 }
 
+function refreshSavedPanel() {
+  const savedIds = getSavedPosts();
+  const allPostsMap = {};
+  Object.keys(memberData).forEach(mk => {
+    (MEMBER_POSTS[mk] || []).forEach(p => { allPostsMap[p.id] = { post: p, key: mk }; });
+  });
+  const savedItems = savedIds.map(id => allPostsMap[id]).filter(Boolean);
+
+  Object.keys(memberData).forEach(mk => {
+    const panel = document.getElementById('instaFeedSaved-' + mk);
+    if (!panel) return;
+
+    const gridHtml = savedItems.length === 0
+      ? `<div style="text-align:center;padding:48px 16px;color:#bbb;font-size:13px;line-height:1.9">저장한 게시물이 없어요<br><span style="font-size:11px;color:#ccc">게시물 하단 🔖 버튼으로 저장하세요</span></div>`
+      : `<div class="insta-grid">${savedItems.map(({ post, key: sk }) => {
+          const sm = memberData[sk];
+          return `<div class="insta-item" onclick="openPostDetail('${post.id}','${sk}')"><img src="${post.image || sm.photo}" onerror="this.onerror=null;this.src='${sm.photo}'" alt="${sm.name}" style="filter:${post.filter||'none'}"></div>`;
+        }).join('')}</div>`;
+
+    panel.innerHTML = `
+      <div class="insta-section-label">저장됨 · ${savedItems.length}개</div>
+      ${gridHtml}
+    `;
+  });
+}
+
 function togglePostSave(postId) {
   const saved = getSavedPosts();
   const idx = saved.indexOf(postId);
@@ -9871,6 +9901,7 @@ function togglePostSave(postId) {
   setTimeout(() => { btn.style.transform = ''; }, 180);
 
   if (nowSaved) showToast('게시물 저장됨 🔖');
+  refreshSavedPanel();
 }
 
 function togglePostLike(postId, key) {

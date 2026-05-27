@@ -13541,23 +13541,11 @@ function isChatPhotoContextual(reply) {
   return CHAT_PHOTO_CONTEXT_KEYWORDS.some(k => reply.includes(k));
 }
 function pickChatPhoto(memberKey) {
-  const cfg = CHAT_PHOTO_CFG[memberKey];
-  if (!cfg) return null;
-  // localStorage 추가 이미지 포함
+  // 채팅 전용 이미지만 사용 (venux_chatimg_extra_{mk})
   const extras = getChatImgExtras(memberKey);
-  const totalPool = cfg.count + extras.length;
-  const n = Math.floor(Math.random() * totalPool);
-  if (n < cfg.count) {
-    // 기본 정적 파일
-    const cardId = `${cfg.id}_c${n + 1}`;
-    const src = `photocards/${cfg.prefix}/${cardId}.png`;
-    return { src, cardId };
-  } else {
-    // localStorage 추가 이미지 (base64)
-    const extraIdx = n - cfg.count;
-    const src = extras[extraIdx];
-    return { src, cardId: `${cfg.id}_extra_${extraIdx + 1}` };
-  }
+  if (!extras.length) return null;
+  const idx = Math.floor(Math.random() * extras.length);
+  return { src: extras[idx], cardId: `chatimg_${memberKey}_${idx + 1}` };
 }
 
 // ── 사진요청 하루 3회 제한 ─────────────────────────────────

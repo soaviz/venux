@@ -700,6 +700,8 @@
       /* DAILY GAME LAYER */
       .daily-status-bar { padding:6px 16px; }
       .daily-nickname { font-size:13px; }
+      .daily-meet-label { font-size:7px !important; }
+      .daily-meet-count { font-size:10px !important; }
       .today-member-card { margin:10px 16px; padding:16px; }
       .today-portrait { width:56px; height:56px; }
       .today-member-name { font-size:16px; }
@@ -802,6 +804,9 @@
     .daily-stat { display:flex; align-items:center; gap:4px; font-size:12px; color:#888; }
     .daily-stat-value { font-weight:700; color:#6B5BD6; }
     .daily-dday { font-size:11px; font-weight:700; color:white; background:linear-gradient(135deg,#6B5BD6,#8B6BD6); padding:3px 8px; border-radius:8px; font-family:'JetBrains Mono',monospace; letter-spacing:0.03em; }
+    .daily-meet-timer { display:flex; flex-direction:column; gap:0px; margin-left:4px; }
+    .daily-meet-label { font-size:8px; color:rgba(107,91,214,0.55); font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; line-height:1.2; }
+    .daily-meet-count { font-size:11px; font-weight:700; color:#e879f9; font-family:'JetBrains Mono',monospace; letter-spacing:0.04em; line-height:1.2; }
 
     /* TODAY'S MEMBER CARD */
     .today-member-card { margin:12px 20px; padding:20px; background:white; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.04); display:flex; align-items:center; gap:16px; position:relative; overflow:hidden; cursor:pointer; transition:transform 0.25s ease, opacity 0.25s ease, box-shadow 0.25s ease; }
@@ -821,9 +826,10 @@
 
     /* TAB BAR */
     .tab-bar { position:fixed; bottom:0; left:0; right:0; z-index:900; display:flex; background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid rgba(0,0,0,0.06); padding:6px 0 env(safe-area-inset-bottom,8px); }
-    .tab-bar-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:8px 0; cursor:pointer; transition:color 0.2s; color:#aaa; -webkit-tap-highlight-color:transparent; }
-    .tab-bar-item.active { color:#6B5BD6; }
-    .tab-bar-item .tab-icon { font-size:22px; line-height:1; }
+    .tab-bar-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:8px 0; cursor:pointer; transition:color 0.2s, filter 0.2s; color:rgba(150,140,175,0.55); -webkit-tap-highlight-color:transparent; }
+    .tab-bar-item.active { color:#d946ef; filter:drop-shadow(0 0 5px rgba(217,70,239,0.45)); }
+    .tab-bar-item .tab-icon { display:flex; align-items:center; justify-content:center; width:28px; height:28px; }
+    .tab-bar-item .tab-icon svg { width:24px; height:24px; }
     .tab-bar-item .tab-label { display:none; }
 
     /* SCREEN padding for tab bar */
@@ -1482,6 +1488,8 @@
     .daily-nickname { color: var(--vx-text) !important; }
     .daily-stat { color: var(--vx-muted) !important; }
     .daily-stat-value { color: var(--vx-purple) !important; }
+    .daily-meet-label { color: rgba(167,139,250,0.45) !important; }
+    .daily-meet-count { color: #e879f9 !important; text-shadow: 0 0 8px rgba(232,121,249,0.4); }
     .daily-mbti {
       background: rgba(167,139,250,.12) !important;
       color: var(--vx-cyan) !important;
@@ -1683,13 +1691,12 @@
       opacity: .5;
     }
     .tab-bar { position: fixed; }
-    .tab-bar-item { color: rgba(139,130,170,.5) !important; transition: color .2s, text-shadow .2s !important; }
+    .tab-bar-item { color: rgba(139,130,170,.38) !important; transition: color .2s, filter .2s !important; }
     .tab-bar-item.active {
-      color: var(--vx-purple) !important;
-      text-shadow: 0 0 10px var(--vx-purple) !important;
+      color: #e879f9 !important;
     }
     .tab-bar-item.active .tab-icon {
-      filter: drop-shadow(0 0 6px var(--vx-purple));
+      filter: drop-shadow(0 0 7px rgba(232,121,249,0.7)) drop-shadow(0 0 14px rgba(167,139,250,0.4));
       animation: vx-float 2.5s ease-in-out infinite;
     }
 
@@ -1964,6 +1971,29 @@
       font-size: 10px;
       color: var(--vx-text-3);
       letter-spacing: 0.12em;
+    }
+    .vx-meet-timer {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+      cursor: default;
+    }
+    .vx-meet-label {
+      font-family: var(--vx-font-mono);
+      font-size: 8px;
+      color: rgba(167,139,250,0.5);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .vx-meet-count {
+      font-family: var(--vx-font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(232,121,249,0.85);
+      letter-spacing: 0.06em;
+      line-height: 1;
     }
 
     /* === Headline === */
@@ -3928,6 +3958,10 @@
   <div class="daily-status-bar" id="dailyStatusBar" style="display:none">
     <div class="daily-user-info">
       <span class="daily-nickname" id="dailyNickname"></span>
+      <div class="daily-meet-timer" id="dailyMeetTimer">
+        <span class="daily-meet-label">우리가 만난 시간</span>
+        <span class="daily-meet-count" id="dailyMeetCount">···</span>
+      </div>
       <span class="daily-mbti" id="dailyMBTI" style="display:none"></span>
     </div>
     <div class="daily-stats">
@@ -4026,15 +4060,45 @@
   <div class="footer">VENUX × ALEKA · BROADCAST 2026 — <a href="#">SOAVIZ AI STUDIO</a></div>
 </div>
 
-<!-- Cosmic clock ticker -->
+<!-- Cosmic clock ticker + Meet timer -->
 <script>
 (function(){
+  // ── 첫 방문 시각 기록 (localStorage 영구 저장)
+  var MEET_KEY = 'venux_first_visit';
+  if (!localStorage.getItem(MEET_KEY)) {
+    localStorage.setItem(MEET_KEY, Date.now().toString());
+  }
+
+  function updateMeetTimer() {
+    var first = parseInt(localStorage.getItem(MEET_KEY), 10);
+    if (!first) return;
+    var diff = Math.floor((Date.now() - first) / 1000); // 초 단위
+    var days  = Math.floor(diff / 86400);
+    var hours = Math.floor((diff % 86400) / 3600);
+    var mins  = Math.floor((diff % 3600) / 60);
+    var secs  = diff % 60;
+    var pad   = function(n){ return n < 10 ? '0'+n : ''+n; };
+    var parts = [];
+    if (days > 0)  parts.push(days + '일');
+    if (hours > 0 || days > 0) parts.push(hours + '시간');
+    parts.push(mins + '분');
+    parts.push(pad(secs) + '초');
+    var text = parts.join(' ');
+    // 헤더용
+    var el1 = document.getElementById('vxMeetCount');
+    if (el1) el1.textContent = text;
+    // 닉네임 옆
+    var el2 = document.getElementById('dailyMeetCount');
+    if (el2) el2.textContent = text;
+  }
+
   function tick(){
     var ids = ['vxClock','vxClockPhoto'];
     var d = new Date();
     var pad = function(n){ return n<10?'0'+n:n; };
     var t = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
     ids.forEach(function(id){ var el = document.getElementById(id); if(el) el.textContent = t; });
+    updateMeetTimer();
   }
   tick(); setInterval(tick, 1000);
 })();
@@ -4947,19 +5011,47 @@ function vxCamShoot(){
 
 <div class="tab-bar" id="tabBar">
   <div class="tab-bar-item active" data-tab="screen-landing" onclick="switchTab(this)">
-    <div class="tab-icon">🏠</div>
+    <div class="tab-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+        <path d="M9 21V12h6v9"/>
+      </svg>
+    </div>
   </div>
   <div class="tab-bar-item" data-tab="screen-results" onclick="switchTab(this)">
-    <div class="tab-icon">💬</div>
+    <div class="tab-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        <line x1="9" y1="10" x2="15" y2="10"/>
+        <line x1="9" y1="13.5" x2="13" y2="13.5"/>
+      </svg>
+    </div>
   </div>
   <div class="tab-bar-item" data-tab="screen-affinity" onclick="switchTab(this)">
-    <div class="tab-icon">💕</div>
+    <div class="tab-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+        <path d="M12 8.5c0 0 1.5 1 1.5 2.5s-1.5 2-1.5 2s-1.5-.5-1.5-2S12 8.5 12 8.5z" fill="currentColor" opacity="0.3" stroke="none"/>
+      </svg>
+    </div>
   </div>
   <div class="tab-bar-item" data-tab="screen-collection" onclick="switchTab(this)">
-    <div class="tab-icon">📸</div>
+    <div class="tab-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <rect x="3" y="5" width="18" height="15" rx="2"/>
+        <circle cx="12" cy="12.5" r="3.2"/>
+        <path d="M3 9h2.5M8.5 5l1.2 2.2M15.5 5l-1.2 2.2"/>
+        <circle cx="17.5" cy="8" r="1" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
   </div>
   <div class="tab-bar-item" data-tab="screen-game-settings" onclick="switchTab(this)">
-    <div class="tab-icon">⚙️</div>
+    <div class="tab-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+    </div>
   </div>
 </div>
 

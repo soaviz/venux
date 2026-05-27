@@ -707,8 +707,8 @@
       .attendance-card { padding:24px 20px; }
       .attendance-portrait { width:100px; height:100px; }
       .onboarding-title { font-size:22px; }
-      .tab-bar-item .tab-icon { font-size:18px; }
-      .tab-bar-item .tab-label { font-size:9px; }
+      .tab-bar-item .tab-icon { font-size:20px; }
+      .tab-bar-item .tab-label { display:none !important; }
     }
 
     /* ============================================ */
@@ -821,10 +821,10 @@
 
     /* TAB BAR */
     .tab-bar { position:fixed; bottom:0; left:0; right:0; z-index:900; display:flex; background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid rgba(0,0,0,0.06); padding:6px 0 env(safe-area-inset-bottom,8px); }
-    .tab-bar-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 0; cursor:pointer; transition:color 0.2s; color:#aaa; -webkit-tap-highlight-color:transparent; }
+    .tab-bar-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:8px 0; cursor:pointer; transition:color 0.2s; color:#aaa; -webkit-tap-highlight-color:transparent; }
     .tab-bar-item.active { color:#6B5BD6; }
-    .tab-bar-item .tab-icon { font-size:20px; }
-    .tab-bar-item .tab-label { font-size:10px; font-weight:600; font-family:'Noto Sans KR',sans-serif; }
+    .tab-bar-item .tab-icon { font-size:22px; line-height:1; }
+    .tab-bar-item .tab-label { display:none; }
 
     /* SCREEN padding for tab bar */
     .screen { padding-bottom:72px; }
@@ -3269,13 +3269,7 @@
       transition: color .2s var(--vx-ease) !important;
       font-family: var(--vx-font-mono) !important;
     }
-    .tab-bar-item .tab-label {
-      font-family: var(--vx-font-mono) !important;
-      font-size: 9px !important;
-      letter-spacing: 0.1em !important;
-      text-transform: uppercase;
-      font-weight: 600 !important;
-    }
+    .tab-bar-item .tab-label { display:none !important; }
     .tab-bar-item.active {
       color: #FFFFFF !important;
     }
@@ -4954,23 +4948,18 @@ function vxCamShoot(){
 <div class="tab-bar" id="tabBar">
   <div class="tab-bar-item active" data-tab="screen-landing" onclick="switchTab(this)">
     <div class="tab-icon">🏠</div>
-    <div class="tab-label" data-i18n="tab_home">홈</div>
   </div>
   <div class="tab-bar-item" data-tab="screen-results" onclick="switchTab(this)">
     <div class="tab-icon">💬</div>
-    <div class="tab-label" data-i18n="tab_chat">채팅</div>
   </div>
   <div class="tab-bar-item" data-tab="screen-affinity" onclick="switchTab(this)">
     <div class="tab-icon">💕</div>
-    <div class="tab-label" data-i18n="tab_affinity">친밀도</div>
   </div>
   <div class="tab-bar-item" data-tab="screen-collection" onclick="switchTab(this)">
     <div class="tab-icon">📸</div>
-    <div class="tab-label" data-i18n="tab_photos">사진첩</div>
   </div>
   <div class="tab-bar-item" data-tab="screen-game-settings" onclick="switchTab(this)">
     <div class="tab-icon">⚙️</div>
-    <div class="tab-label" data-i18n="tab_settings">설정</div>
   </div>
 </div>
 

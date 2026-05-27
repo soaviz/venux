@@ -1324,13 +1324,13 @@
     @keyframes typingDot { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
 
     /* Quick reply chips */
-    .chat-chips { display:flex; gap:8px; padding:8px 12px; overflow-x:auto; -webkit-overflow-scrolling:touch; flex-shrink:0; }
+    .chat-chips-row { display:flex; align-items:center; padding:6px 12px; gap:8px; flex-shrink:0; }
+    .chat-chips { display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; flex:1; min-width:0; }
     .chat-chips::-webkit-scrollbar { display:none; }
     .chat-chip { flex-shrink:0; padding:8px 14px; border-radius:16px; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all 0.15s; white-space:nowrap; font-family:'Noto Sans KR',sans-serif; }
     .chat-chip:active { transform:scale(0.95); }
     .chat-chip.fade-out { opacity:0; transform:translateY(4px); transition:all 0.3s ease; }
     .chat-chip.fade-in { animation:chipFadeIn 0.3s ease forwards; }
-    .chat-photo-tab-bar { display:flex; align-items:center; padding:6px 12px 2px; gap:8px; flex-shrink:0; }
     .chat-photo-tab { flex-shrink:0; padding:6px 14px; border-radius:16px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid #ff6b9d; color:#ff6b9d; background:rgba(255,107,157,0.08); white-space:nowrap; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; letter-spacing:-0.01em; }
     .chat-photo-tab:active { transform:scale(0.95); background:rgba(255,107,157,0.18); }
     .chat-photo-tab.exhausted { opacity:0.4; cursor:default; border-style:dashed; }
@@ -5096,10 +5096,10 @@ function vxCamShoot(){
     </div>
   </div>
   <div class="chat-body" id="chatBody"></div>
-  <div class="chat-photo-tab-bar" id="chatPhotoTabBar">
+  <div class="chat-chips-row">
     <button class="chat-photo-tab" id="chatPhotoTabBtn" onclick="onPhotoTabClick()">📸 사진요청 <span id="chatPhotoTabCount"></span></button>
+    <div class="chat-chips" id="chatChips"></div>
   </div>
-  <div class="chat-chips" id="chatChips"></div>
   <div class="chat-input-bar">
     <button class="chat-plus-btn" onclick="toggleChatActions()">+</button>
     <div class="chat-input-wrap">

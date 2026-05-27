@@ -648,9 +648,6 @@ a { color:var(--purple2); text-decoration:none; }
     <div class="gate-label">관리자 비밀번호</div>
     <input id="pw-input" class="gate-input" type="password"
       placeholder="비밀번호를 입력하세요" autocomplete="off">
-    <label class="gate-remember">
-      <input type="checkbox" id="remember-me"> 로그인 상태 유지 (7일)
-    </label>
     <button class="gate-btn" onclick="verifyAdmin()">접속하기</button>
     <div class="gate-err" id="gate-err"></div>
     <div class="gate-setup" id="gate-hint">
@@ -1589,7 +1586,7 @@ async function sha256(str) {
 }
 
 function saveAdminSession() {
-  const expiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
   localStorage.setItem(SESSION_KEY, JSON.stringify({ expiry }));
 }
 function clearAdminSession() {
@@ -1609,7 +1606,7 @@ async function verifyAdmin() {
   if (!pw) return;
   const hash = await sha256(pw);
   if (hash === ADMIN_PW_HASH) {
-    if (document.getElementById('remember-me').checked) saveAdminSession();
+    saveAdminSession();
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').classList.add('visible');
     initApp();

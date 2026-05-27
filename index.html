@@ -4905,43 +4905,10 @@ function vxCamShoot(){
         <div style="font-size:12px;color:#aaa;text-align:center;padding:8px">🔒 관리자 로그인 시 사진 업로드 가능</div>
       </div>
     </div>
-    <!-- ── 포토카드 추가 ── -->
-    <div class="profile-info-card" id="pcardAdminCard">
-      <div class="profile-info-label">🃏 포토카드 추가</div>
-      <div id="pcardAdminSection" style="display:none;margin-top:12px">
-        <div style="font-size:13px;font-weight:600;color:#6B5BD6;margin-bottom:4px">프로필 포토카드 탭에 표시</div>
-        <div style="font-size:11px;color:#aaa;margin-bottom:12px">채팅 이미지와 별도로 관리됩니다</div>
-        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
-          <button class="cimg-tab pcard-tab active" data-mk="ARA-462" onclick="selectPcardMember(this,'ARA-462')">ARA</button>
-          <button class="cimg-tab pcard-tab" data-mk="LUX-299" onclick="selectPcardMember(this,'LUX-299')">LUX</button>
-          <button class="cimg-tab pcard-tab" data-mk="EUR-0K" onclick="selectPcardMember(this,'EUR-0K')">EUR</button>
-          <button class="cimg-tab pcard-tab" data-mk="KIN-360" onclick="selectPcardMember(this,'KIN-360')">KIN</button>
-          <button class="cimg-tab pcard-tab" data-mk="ATP-X1" onclick="selectPcardMember(this,'ATP-X1')">ATP</button>
-        </div>
-        <div id="pcardImgStatBadge" style="font-size:12px;color:#888;margin-bottom:10px"></div>
-        <div id="pcardImgGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px"></div>
-        <div class="upload-zone"
-          onclick="document.getElementById('pcardFileInput').click()"
-          ondragover="event.preventDefault();this.classList.add('dragover')"
-          ondragleave="this.classList.remove('dragover')"
-          ondrop="event.preventDefault();this.classList.remove('dragover');handlePcardDrop(event)">
-          <div class="upload-zone-icon">🃏</div>
-          <div class="upload-zone-text">클릭 또는 드래그하여 포토카드 추가</div>
-          <div class="upload-zone-hint">JPG, PNG, WEBP · 프로필 포토카드 탭에 표시</div>
-        </div>
-        <input type="file" id="pcardFileInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="handlePcardImgSelect(event)">
-        <div id="pcardUploadProgress" style="display:none;margin-top:8px;font-size:12px;color:#6B5BD6;text-align:center"></div>
-      </div>
-      <div id="pcardAdminLocked" style="margin-top:4px">
-        <div style="font-size:12px;color:#aaa;text-align:center;padding:8px">🔒 관리자 로그인 시 포토카드 관리 가능</div>
-      </div>
-    </div>
-    <!-- ── 채팅 이미지 관리 ── -->
+    <!-- ── 포토카드 관리 ── -->
     <div class="profile-info-card" id="chatImgAdminCard">
-      <div class="profile-info-label">📸 채팅 이미지 관리</div>
+      <div class="profile-info-label">🃏 포토카드 관리</div>
       <div id="chatImgAdminSection" style="display:none;margin-top:12px">
-        <div style="font-size:13px;font-weight:600;color:#6B5BD6;margin-bottom:4px">채팅 중 랜덤 전송되는 이미지</div>
-        <div style="font-size:11px;color:#aaa;margin-bottom:12px">포토카드와 별도 — 대화 중 자동 발송용</div>
         <!-- 멤버 탭 -->
         <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
           <button class="cimg-tab active" data-mk="ARA-462" onclick="selectChatImgMember(this,'ARA-462')">ARA</button>
@@ -4960,16 +4927,16 @@ function vxCamShoot(){
           ondragover="event.preventDefault();this.classList.add('dragover')"
           ondragleave="this.classList.remove('dragover')"
           ondrop="event.preventDefault();this.classList.remove('dragover');handleChatImgDrop(event)">
-          <div class="upload-zone-icon">📸</div>
-          <div class="upload-zone-text">클릭 또는 드래그하여 이미지 추가</div>
-          <div class="upload-zone-hint">JPG, PNG, WEBP · 여러 장 동시 가능</div>
+          <div class="upload-zone-icon">🃏</div>
+          <div class="upload-zone-text">클릭 또는 드래그하여 포토카드 추가</div>
+          <div class="upload-zone-hint">JPG, PNG, WEBP · 채팅 중 랜덤 전송</div>
         </div>
         <input type="file" id="chatImgFileInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="handleChatImgSelect(event)">
         <div id="chatImgUploadProgress" style="display:none;margin-top:8px;font-size:12px;color:#6B5BD6;text-align:center"></div>
         <button onclick="clearAllChatImgExtras(_chatImgCurrentMember)" style="margin-top:10px;width:100%;padding:8px;border-radius:10px;border:1.5px solid #ffcdd2;background:#fff5f5;color:#e53935;font-size:12px;font-weight:600;cursor:pointer">🗑️ 현재 멤버 추가 이미지 전체 초기화</button>
       </div>
       <div id="chatImgAdminLocked" style="margin-top:4px">
-        <div style="font-size:12px;color:#aaa;text-align:center;padding:8px">🔒 관리자 로그인 시 이미지 관리 가능</div>
+        <div style="font-size:12px;color:#aaa;text-align:center;padding:8px">🔒 관리자 로그인 시 포토카드 관리 가능</div>
       </div>
     </div>
 
@@ -11021,14 +10988,6 @@ function updateAdminUploadVisibility() {
     if (session) renderChatImgAdminGrid(_chatImgCurrentMember);
   }
   if (chatImgLocked) chatImgLocked.style.display = session ? 'none' : 'block';
-  // 포토카드 추가 섹션
-  const pcardSection = document.getElementById('pcardAdminSection');
-  const pcardLocked = document.getElementById('pcardAdminLocked');
-  if (pcardSection) {
-    pcardSection.style.display = session ? 'block' : 'none';
-    if (session) renderPcardAdminGrid(_pcardCurrentMember);
-  }
-  if (pcardLocked) pcardLocked.style.display = session ? 'none' : 'block';
 }
 
 // ── 관리자 멤버 프로필 사진 업로드 ─────────────────────────
@@ -11227,10 +11186,19 @@ function renderChatImgAdminGrid(memberKey) {
   const extras = getChatImgExtras(memberKey);
   const grid = document.getElementById('chatImgGrid');
   const badge = document.getElementById('chatImgStatBadge');
-  badge.innerHTML = `추가된 채팅 이미지 <b style="color:#6B5BD6">${extras.length}장</b>`;
+  const total = cfg.count + extras.length;
+  badge.innerHTML = `기본 <b>${cfg.count}장</b> + 추가 <b style="color:#6B5BD6">${extras.length}장</b> = 합계 <b>${total}장</b>`;
 
   let html = '';
-  // 추가 이미지 (localStorage) only
+  // 정적 포토카드
+  for (let i = 1; i <= cfg.count; i++) {
+    const src = `photocards/${cfg.prefix}/${cfg.id}_c${i}.png`;
+    html += `<div class="cimg-item static-img">
+      <img src="${src}" alt="c${i}" onerror="this.parentElement.style.display='none'">
+      <div class="cimg-badge">c${i}</div>
+    </div>`;
+  }
+  // 추가 이미지 (localStorage)
   extras.forEach((dataURL, idx) => {
     html += `<div class="cimg-item">
       <img src="${dataURL}" alt="extra${idx}">
@@ -11238,7 +11206,6 @@ function renderChatImgAdminGrid(memberKey) {
       <button class="cimg-del" onclick="deleteChatImgExtra('${memberKey}',${idx})">✕</button>
     </div>`;
   });
-  if (!html) html = `<div style="grid-column:span 4;text-align:center;padding:14px;font-size:12px;color:#bbb">추가된 채팅 이미지 없음</div>`;
   grid.innerHTML = html;
 }
 

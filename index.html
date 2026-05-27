@@ -532,6 +532,15 @@
     .pc-back-tap { font-family:'JetBrains Mono',monospace; font-size:7px; color:rgba(255,255,255,0.28); margin-top:10px; letter-spacing:0.12em; text-transform:uppercase; }
     .pc-collection-bar { margin:0 14px 14px; background:rgba(0,0,0,0.06); border-radius:8px; overflow:hidden; height:5px; }
     .pc-collection-fill { height:100%; border-radius:8px; transition:width 0.4s ease; }
+    /* ── 다이어리 표지 ── */
+    .diary-cover-wrap { position:relative; width:100%; cursor:pointer; overflow:hidden; border-radius:0; margin-bottom:0; }
+    .diary-cover-img { width:100%; display:block; object-fit:cover; max-height:88vh; }
+    .diary-cover-hint { position:absolute; bottom:0; left:0; right:0; padding:32px 0 18px; background:linear-gradient(to bottom, transparent, rgba(0,0,0,0.55)); display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .diary-cover-hint span { color:rgba(255,255,255,0.9); font-size:13px; font-weight:600; font-family:'Noto Sans KR',sans-serif; letter-spacing:0.04em; }
+    .diary-cover-hint svg { animation:coverBounce 1.6s ease-in-out infinite; }
+    @keyframes coverBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+    .diary-entries-section { padding:0 12px 16px; }
+
     /* ── 다이어리 탭 ── */
     .diary-entry-row { padding:11px 14px; border-radius:12px; background:#f9f8ff; border:1px solid rgba(107,91,214,0.1); margin-bottom:7px; cursor:pointer; transition:background 0.15s; }
     .diary-entry-row:active { background:#f2f0ff; }
@@ -2908,6 +2917,84 @@
       color: var(--vx-text);
       box-shadow: none;
     }
+
+    /* ── 다이어리 세부 페이지 오버레이 ── */
+    #diaryDetailOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0b0d16;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+      overflow: hidden;
+    }
+    #diaryDetailOverlay.show { transform: translateX(0); }
+    .dd-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px 10px;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .dd-back-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      color: rgba(255,255,255,0.8);
+      transition: background 0.15s;
+    }
+    .dd-back-btn:active { background: rgba(255,255,255,0.12); }
+    .dd-header-info { flex: 1; min-width: 0; }
+    .dd-header-name { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.5; color: #fff; }
+    .dd-header-title { font-size: 15px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .dd-body {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 0 0 40px;
+    }
+    .dd-body::-webkit-scrollbar { display: none; }
+    .dd-cover-strip {
+      width: 100%; position: relative; overflow: hidden;
+      max-height: 38vh;
+    }
+    .dd-cover-strip img { width: 100%; display: block; object-fit: cover; max-height: 38vh; object-position: top; }
+    .dd-cover-strip::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+      background: linear-gradient(to bottom, transparent, #0b0d16);
+    }
+    .dd-entry-header {
+      padding: 16px 20px 0;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .dd-mood { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+    .dd-entry-meta { flex: 1; }
+    .dd-entry-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.02em; line-height: 1.3; }
+    .dd-entry-date { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 5px; letter-spacing: 0.03em; }
+    .dd-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 18px 20px; }
+    .dd-content {
+      padding: 0 20px 20px;
+      font-size: 15px; color: rgba(255,255,255,0.82);
+      line-height: 2.0; white-space: pre-wrap;
+      font-family: 'Noto Sans KR', sans-serif;
+      letter-spacing: -0.01em;
+    }
+    .dd-content p.diary-para { margin-top: 16px; }
+    .dd-nav-bar {
+      display: flex; gap: 10px; padding: 12px 20px 20px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+    .dd-nav-btn {
+      flex: 1; padding: 12px; border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.7);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .dd-nav-btn:active { background: rgba(255,255,255,0.10); }
+    .dd-nav-btn:disabled { opacity: 0.3; cursor: default; }
     .vx-pg-info {
       font-family: var(--vx-font-mono);
       font-size: 12px;
@@ -9944,6 +10031,20 @@ function flipCard(id) {
 window._vxDiaryPage = window._vxDiaryPage || {};
 const VX_DIARY_PAGE_SIZE = 5;
 
+// 멤버별 다이어리 표지 이미지
+const DIARY_COVER_CFG = {
+  'ARA-462': 'assets/diary-covers/ara-cover.jpg',   // 이루나 — Lee Luna (핑크 뷰티)
+  'LUX-299': 'assets/diary-covers/lux-cover.jpg',   // 박리라 — Park Lyra (블랙 시크)
+  'EUR-0K':  'assets/diary-covers/eur-cover.jpg',   // 신지우 — Shin Jiu (퍼플 사이버)
+  'KIN-360': 'assets/diary-covers/kin-cover.jpg',   // 최노아 — Choi Noa (오렌지 프리)
+  'ATP-X1':  'assets/diary-covers/atp-cover.jpg',   // 정아온 — Jung Aon (그린 힐링)
+};
+
+function scrollToDiaryEntries(key) {
+  const el = document.getElementById('diary-entries-anchor-' + key);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function renderDiaryTab(key) {
   const m = memberData[key];
   const db = getOrCreateDB();
@@ -10014,19 +10115,31 @@ function renderDiaryTab(key) {
       <div class="letter-history" id="letterHistory-${key}" style="margin-top:8px"></div>
     </div>`;
 
+  const coverSrc = DIARY_COVER_CFG[key];
+  const coverHtml = coverSrc ? `
+    <div class="diary-cover-wrap" onclick="scrollToDiaryEntries('${key}')">
+      <img class="diary-cover-img" src="${coverSrc}" alt="${m.name} 다이어리 표지"
+           onerror="this.parentElement.style.display='none'">
+      <div class="diary-cover-hint">
+        <span>다이어리 열기</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>` : '';
+
   el.innerHTML = `
-    <div style="padding:0 4px 24px">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px">
+    ${coverHtml}
+    <div class="diary-entries-section" id="diary-entries-anchor-${key}">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0 10px">
         <div>
           <div style="font-size:14px;font-weight:800;color:#1a1a1a;letter-spacing:-0.02em">${m.name}의 일기장</div>
           <div style="font-size:11px;color:#aaa;margin-top:2px">LV ${myLevel} · ${entries.filter(e=>e.minLevel<=myLevel).length}/${entries.length}편 해금</div>
         </div>
         <div style="width:36px;height:36px;border-radius:50%;background:${m.gradient};display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.85">📔</div>
       </div>
-      <div style="height:1px;background:rgba(0,0,0,0.07);margin:0 12px 12px"></div>
+      <div style="height:1px;background:rgba(0,0,0,0.07);margin-bottom:12px"></div>
       ${listHtml}
       ${pagerHtml}
-      <div style="height:1px;background:rgba(0,0,0,0.07);margin:12px 12px 14px"></div>
+      <div style="height:1px;background:rgba(0,0,0,0.07);margin:12px 0 14px"></div>
       ${letterSection}
     </div>`;
 
@@ -10043,34 +10156,102 @@ function vxDiaryGo(key, delta) {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// 다이어리 세부 페이지
+let _ddCurrentKey = null;
+let _ddCurrentIdx = 0;
+
 function toggleDiaryEntry(key, id) {
-  const content = document.getElementById('diary-content-' + id);
-  const preview = document.getElementById('diary-prev-' + id);
-  const chev = document.getElementById('diary-chev-' + id);
-  const row = document.getElementById('diary-row-' + id);
-  if (!content) return;
-  const isOpen = content.style.display !== 'none';
-  if (isOpen) {
-    content.style.display = 'none';
-    if (preview) preview.style.display = 'block';
-    if (chev) chev.style.transform = '';
-    if (row) row.classList.remove('diary-open');
+  // 아코디언 → 세부 페이지로 라우팅
+  const entries = MEMBER_DIARY[key] || [];
+  const idx = entries.findIndex(e => e.id === id);
+  openDiaryDetail(key, idx >= 0 ? idx : 0);
+}
+
+function openDiaryDetail(key, idx) {
+  const entries = MEMBER_DIARY[key] || [];
+  if (!entries.length) return;
+  if (idx < 0) idx = 0;
+  if (idx >= entries.length) idx = entries.length - 1;
+
+  _ddCurrentKey = key;
+  _ddCurrentIdx = idx;
+  _ddRenderDetail();
+
+  const overlay = document.getElementById('diaryDetailOverlay');
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function _ddRenderDetail() {
+  const key = _ddCurrentKey;
+  const idx = _ddCurrentIdx;
+  const entries = MEMBER_DIARY[key] || [];
+  const entry = entries[idx];
+  const m = memberData[key];
+  const db = getOrCreateDB();
+  const rel = db.member_relationships[key] || { affection_points: 0 };
+  const myLevel = getAffinityLevel(rel.affection_points);
+  const locked = entry.minLevel > myLevel;
+
+  // 헤더
+  document.getElementById('dd-header-name').textContent = m.name + '의 일기장';
+  document.getElementById('dd-header-title').textContent = locked ? `🔒 LV ${entry.minLevel} 해금` : entry.title;
+
+  // 표지 스트립
+  const coverSrc = DIARY_COVER_CFG[key] || '';
+  const coverStrip = coverSrc
+    ? `<div class="dd-cover-strip"><img src="${coverSrc}" alt="" loading="lazy"></div>`
+    : `<div style="height:6px;background:${m.gradient}"></div>`;
+
+  // 본문
+  let bodyHtml;
+  if (locked) {
+    bodyHtml = `
+      <div style="text-align:center;padding:48px 24px">
+        <div style="font-size:44px;margin-bottom:16px">🔒</div>
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:8px">잠긴 페이지</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7">LV ${entry.minLevel} 이상에서 해금돼요.<br>${m.name}와 더 친해지면 읽을 수 있어요.</div>
+      </div>`;
   } else {
-    // 내용 채우기 (최초 1회)
-    if (!content.dataset.loaded) {
-      const entries = MEMBER_DIARY[key] || [];
-      const entry = entries.find(e => e.id === id);
-      if (entry) {
-        const m = memberData[key];
-        content.innerHTML = `<div class="diary-body">${entry.content.replace(/\n\n/g,'</p><p class="diary-para">').replace(/\n/g,'<br>')}</div>`;
-        content.dataset.loaded = '1';
-      }
-    }
-    content.style.display = 'block';
-    if (preview) preview.style.display = 'none';
-    if (chev) chev.style.transform = 'rotate(90deg)';
-    if (row) row.classList.add('diary-open');
+    const contentHtml = entry.content
+      .replace(/\n\n/g, '</p><p class="diary-para">')
+      .replace(/\n/g, '<br>');
+    bodyHtml = `
+      <div class="dd-entry-header">
+        <span class="dd-mood">${entry.mood}</span>
+        <div class="dd-entry-meta">
+          <div class="dd-entry-title">${entry.title}</div>
+          <div class="dd-entry-date">${entry.date} ${entry.day}요일</div>
+        </div>
+      </div>
+      <div class="dd-divider"></div>
+      <div class="dd-content">${contentHtml}</div>`;
   }
+
+  document.getElementById('dd-body').innerHTML = coverStrip + bodyHtml;
+  document.getElementById('dd-body').scrollTop = 0;
+
+  // 이전/다음 버튼
+  document.getElementById('dd-prev-btn').disabled = idx <= 0;
+  document.getElementById('dd-next-btn').disabled = idx >= entries.length - 1;
+
+  // 헤더 accent color
+  const overlay = document.getElementById('diaryDetailOverlay');
+  overlay.style.setProperty('--dd-accent', m.badgeColor || '#c77dff');
+}
+
+function ddNavigate(delta) {
+  const entries = MEMBER_DIARY[_ddCurrentKey] || [];
+  const next = _ddCurrentIdx + delta;
+  if (next < 0 || next >= entries.length) return;
+  _ddCurrentIdx = next;
+  _ddRenderDetail();
+}
+
+function closeDiaryDetail() {
+  const overlay = document.getElementById('diaryDetailOverlay');
+  overlay.classList.remove('show');
+  document.body.style.overflow = '';
 }
 
 function showDiaryLocked(minLevel, color) {
@@ -15219,5 +15400,28 @@ imgObserver.observe(document.body, { childList: true, subtree: true });
   else window.addEventListener('load', runEntrance);
 })();
 </script>
+<!-- ── 다이어리 세부 페이지 오버레이 ── -->
+<div id="diaryDetailOverlay">
+  <div class="dd-header">
+    <button class="dd-back-btn" onclick="closeDiaryDetail()" aria-label="뒤로">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="dd-header-info">
+      <div class="dd-header-name" id="dd-header-name"></div>
+      <div class="dd-header-title" id="dd-header-title"></div>
+    </div>
+  </div>
+  <div class="dd-body" id="dd-body"></div>
+  <div class="dd-nav-bar">
+    <button class="dd-nav-btn" id="dd-prev-btn" onclick="ddNavigate(-1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      이전 일기
+    </button>
+    <button class="dd-nav-btn" id="dd-next-btn" onclick="ddNavigate(1)">
+      다음 일기
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
 </body>
 </html>

@@ -1320,6 +1320,13 @@
     .chat-bubble.sig-bubble { font-style:italic; font-size:13px; opacity:0.8; margin-top:2px; }
     .chat-img-bubble { max-width:200px; border-radius:4px 18px 18px 18px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.18); animation:chatBubbleIn 0.22s ease-out; cursor:pointer; flex-shrink:0; }
     .chat-img-bubble img { width:100%; display:block; }
+    /* ── 채팅 이미지 라이트박스 ── */
+    #chatImgLightbox { position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,0.92); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+    #chatImgLightbox.open { opacity:1; pointer-events:all; }
+    #chatImgLightbox img { max-width:calc(100vw - 32px); max-height:calc(100vh - 80px); border-radius:12px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.6); transform:scale(0.92); transition:transform 0.22s cubic-bezier(0.22,1,0.36,1); display:block; }
+    #chatImgLightbox.open img { transform:scale(1); }
+    #chatImgLightbox .cil-close { position:absolute; top:16px; right:16px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.12); border:none; color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+    #chatImgLightbox .cil-close:hover { background:rgba(255,255,255,0.22); }
 
     /* Time label */
     .chat-msg-time { font-size:11px; color:#888; align-self:flex-end; margin:0 6px; white-space:nowrap; flex-shrink:0; }
@@ -7315,6 +7322,17 @@ function openCardLightbox(cardId, memberKey) {
 }
 function closeCardLightbox() {
   document.getElementById('pcCardLightbox').classList.remove('open');
+}
+// ── 채팅 이미지 풀스크린 라이트박스 ──
+function openChatImgLightbox(src) {
+  const lb = document.getElementById('chatImgLightbox');
+  const img = document.getElementById('chatImgLightboxImg');
+  img.src = src;
+  lb.classList.add('open');
+}
+function closeChatImgLightbox() {
+  document.getElementById('chatImgLightbox').classList.remove('open');
+  document.getElementById('chatImgLightboxImg').src = '';
 }
 function handlePcCardClick(cardId, memberKey, unlocked) {
   if (unlocked) {
@@ -13817,7 +13835,7 @@ function onPhotoTabClick() {
     const imgTime = new Date().toISOString();
     body.insertAdjacentHTML('beforeend', `<div class="chat-msg-row member">
       <div class="chat-msg-avatar"><img src="${m.photo}" alt="${m.letter}"></div>
-      <div class="chat-img-bubble" onclick="openCardLightbox('${photo.cardId}','${currentChatMember}')">
+      <div class="chat-img-bubble" onclick="openChatImgLightbox('${photo.src}')">
         <img src="${photo.src}" alt="photo">
       </div>
       <span class="chat-msg-time">${formatChatTime(imgTime)}</span>
@@ -14527,7 +14545,7 @@ function renderChatMessages(memberKey) {
       if (msg.isPhoto) {
         html += `<div class="chat-msg-row member">
           <div class="chat-msg-avatar" style="${showAvatar?'':'visibility:hidden'}"><img src="${m.photo}" alt="${m.letter}"></div>
-          <div class="chat-img-bubble" onclick="openCardLightbox('${msg.cardId}','${memberKey}')"><img src="${msg.text}" alt="photo"></div>
+          <div class="chat-img-bubble" onclick="openChatImgLightbox('${msg.text}')"><img src="${msg.text}" alt="photo"></div>
           ${timeStr}
         </div>`;
       } else {
@@ -14750,13 +14768,13 @@ async function sendChatMessage() {
     const photo = pickChatPhoto(memberKey);
     if (photo) {
       const imgTime = new Date().toISOString();
-      body.innerHTML += `<div class="chat-msg-row member">
+      body.insertAdjacentHTML('beforeend', `<div class="chat-msg-row member">
         <div class="chat-msg-avatar"><img src="${m.photo}" alt="${m.letter}"></div>
-        <div class="chat-img-bubble" onclick="openCardLightbox('${photo.cardId}','${memberKey}')">
+        <div class="chat-img-bubble" onclick="openChatImgLightbox('${photo.src}')">
           <img src="${photo.src}" alt="photo">
         </div>
         <span class="chat-msg-time">${formatChatTime(imgTime)}</span>
-      </div>`;
+      </div>`);
       body.scrollTop = body.scrollHeight;
       // 사진 히스토리 저장 + 요청 카운트 차감
       history.push({ role:'member', text: photo.src, isPhoto: true, cardId: photo.cardId, timestamp: imgTime });
@@ -15426,6 +15444,12 @@ imgObserver.observe(document.body, { childList: true, subtree: true });
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   </div>
+</div>
+
+<!-- ── 채팅 이미지 풀스크린 라이트박스 ── -->
+<div id="chatImgLightbox" onclick="if(event.target===this)closeChatImgLightbox()">
+  <button class="cil-close" onclick="closeChatImgLightbox()">✕</button>
+  <img id="chatImgLightboxImg" src="" alt="chat photo">
 </div>
 </body>
 </html>

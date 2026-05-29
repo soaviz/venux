@@ -320,7 +320,7 @@
   }
   /* 카드 이미지 영역 */
   .tp3-rcard-wrap {
-    width: 156px; aspect-ratio: 2/3;
+    width: min(200px, 58vw); aspect-ratio: 2/3;
     perspective: 700px; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     margin-bottom: 18px; flex-shrink: 0;
@@ -394,6 +394,16 @@
     position: relative; z-index: 1;
     font-size: 7px; color: rgba(255,255,255,0.28);
     font-family: var(--vx-font-mono, monospace);
+  }
+  .tp3-rcard-tap-hint {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
+    padding: 28px 0 10px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.72) 0%, transparent 100%);
+    text-align: center;
+    font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    color: rgba(255,255,255,0.72);
+    font-family: var(--vx-font-mono, monospace);
+    pointer-events: none;
   }
   .tp3-rcard-front {
     transform: rotateY(180deg);
@@ -866,8 +876,7 @@
             <div class="tp3-rcard-face tp3-rcard-back"
                  style="background:${bg};--tp3-rc-color:${card.color}">
               <img class="tp3-card-img" src="${cardBackSrc(card)}" alt="${card.nameKo} 카드 뒷면" loading="lazy" decoding="async" onerror="this.style.display='none'">
-              <div class="tp3-rcard-back-glow"></div>
-              <div class="tp3-rcard-hint" style="position:relative;z-index:2">탭해서 확인</div>
+              <div class="tp3-rcard-tap-hint">탭해서 확인 ✦</div>
             </div>
             <div class="tp3-rcard-face tp3-rcard-front"
                  style="background:${bg};--tp3-rc-color:${card.color}">

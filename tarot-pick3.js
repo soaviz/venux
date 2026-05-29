@@ -579,10 +579,45 @@
     pentacles: '/assets/tarot/back_jung_aon.png',
   };
 
+  // 그리드 표시용: 5종 뒷면을 균등 배분하되 인접 카드에 같은 뒷면 오지 않게
+  const _BACK_KEYS = ['major', 'cups', 'swords', 'wands', 'pentacles'];
+
+  function assignDisplayBacks(cards) {
+    const n = cards.length;
+    // 22장에 5종 균등 배분 (4~5장씩)
+    const pool = [];
+    for (let i = 0; i < n; i++) pool.push(_BACK_KEYS[i % _BACK_KEYS.length]);
+    // pool 셔플
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    // 인접 중복 제거: 중복 발견 시 이후 위치에서 다른 값과 스왑
+    for (let i = 1; i < pool.length; i++) {
+      if (pool[i] === pool[i - 1]) {
+        for (let j = i + 1; j < pool.length; j++) {
+          if (pool[j] !== pool[i - 1] && (j === pool.length - 1 || pool[j] !== pool[i + 1])) {
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+            break;
+          }
+        }
+      }
+    }
+    return cards.map((card, i) => ({ ...card, _displayBack: pool[i] }));
+  }
+
+  // 결과창(rcardHtml)에서는 실제 캐릭터 매칭 뒷면 사용
+  function realCardBackSrc(card) {
+    if (card.suit && CARD_BACK_PATHS[card.suit]) return CARD_BACK_PATHS[card.suit];
+    return CARD_BACK_PATHS.major;
+  }
+
+  // 그리드 카드 뒷면: _displayBack 우선 (선택/결과 시엔 realCardBackSrc 사용)
   function cardBackSrc(card) {
     if (card.imageBack && card.imageBack.includes('/')) return card.imageBack;
+    if (card._displayBack) return CARD_BACK_PATHS[card._displayBack];
     if (card.suit && CARD_BACK_PATHS[card.suit]) return CARD_BACK_PATHS[card.suit];
-    return CARD_BACK_PATHS.major; // 메이저 아르카나 → Park Lyra 고정
+    return CARD_BACK_PATHS.major;
   }
 
   function getSourceDeck() {
@@ -673,7 +708,8 @@
     }
 
     setTimeout(() => {
-      state.deck = shuffleDeck(state.deck.length ? state.deck : getSourceDeck());
+      const base = shuffleDeck(state.deck.length ? state.deck : getSourceDeck());
+      state.deck = assignDisplayBacks(base);
       state.shuffleCount += 1;
       state.isShuffling = false;
       render();
@@ -875,7 +911,7 @@
           <div class="tp3-rcard-inner">
             <div class="tp3-rcard-face tp3-rcard-back"
                  style="background:${bg};--tp3-rc-color:${card.color}">
-              <img class="tp3-card-img" src="${cardBackSrc(card)}" alt="${card.nameKo} 카드 뒷면" loading="lazy" decoding="async" onerror="this.style.display='none'">
+              <img class="tp3-card-img" src="${realCardBackSrc(card)}" alt="${card.nameKo} 카드 뒷면" loading="lazy" decoding="async" onerror="this.style.display='none'">
               <div class="tp3-rcard-tap-hint">탭해서 확인 ✦</div>
             </div>
             <div class="tp3-rcard-face tp3-rcard-front"
@@ -990,7 +1026,7 @@
         container.innerHTML = '<div class="tp3-root" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);font-size:13px">카드 데이터를 불러오는 중...</div>';
         return;
       }
-      state.deck = shuffleDeck(source);
+      state.deck = assignDisplayBacks(shuffleDeck(source));
     }
     state.selectedCards = [];
     state.flippedCardIds = [];

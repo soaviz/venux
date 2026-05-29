@@ -1449,6 +1449,7 @@
   const _CAT_LABELS = { love: '애정운', wealth: '재물운', biz: '사업운' };
 
   global._fcShowView = function(view) {
+    _qaOpen = false; // 카테고리 전환 시 Q&A 패널 닫기
     _activeView = view || 'love';
     _renderScreen();
   };

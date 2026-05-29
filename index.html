@@ -1346,43 +1346,61 @@
     /* ── BGM Bottom Sheet ── */
     #bgmSheetOverlay { position:fixed; inset:0; z-index:1290; background:rgba(0,0,0,0); pointer-events:none; transition:background 0.35s; }
     #bgmSheetOverlay.open { background:rgba(0,0,0,0.55); pointer-events:auto; }
-    #bgmSheet { position:fixed; bottom:0; left:0; right:0; z-index:1295; background:linear-gradient(180deg,rgba(18,12,30,0.98) 0%,rgba(8,6,18,0.99) 100%); border-radius:24px 24px 0 0; border-top:1px solid rgba(199,125,255,0.15); transform:translateY(100%); transition:transform 0.4s cubic-bezier(0.32,0.72,0,1); padding-bottom:env(safe-area-inset-bottom,16px); }
+    /* ── BGM Bottom Sheet ── */
+    #bgmSheet { position:fixed; bottom:0; left:0; right:0; z-index:1295; background:linear-gradient(170deg,#0e0818 0%,#06040f 100%); border-radius:28px 28px 0 0; border-top:1px solid rgba(199,125,255,0.12); transform:translateY(100%); transition:transform 0.42s cubic-bezier(0.32,0.72,0,1); padding-bottom:env(safe-area-inset-bottom,20px); overflow:hidden; }
     #bgmSheet.open { transform:translateY(0); }
-    .bgm-handle { width:36px; height:4px; background:rgba(255,255,255,0.15); border-radius:2px; margin:12px auto 0; }
-    .bgm-sheet-head { display:flex; align-items:center; justify-content:space-between; padding:12px 20px 0; }
-    .bgm-sheet-label { font-size:11px; font-weight:700; letter-spacing:.1em; color:rgba(255,255,255,0.3); text-transform:uppercase; }
-    .bgm-sheet-close { width:28px; height:28px; border:none; background:rgba(255,255,255,0.06); border-radius:50%; color:rgba(255,255,255,0.5); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
-    /* Art */
-    .bgm-sheet-art-wrap { display:flex; justify-content:center; padding:20px 0 16px; }
-    #bgmSheetArt { width:140px; height:140px; border-radius:50%; background:linear-gradient(135deg,#c77dff 0%,#7b2ff7 50%,#3d0099 100%); display:flex; align-items:center; justify-content:center; font-size:48px; box-shadow:0 8px 40px rgba(199,125,255,0.35); flex-shrink:0; }
-    #bgmSheetArt.spinning { animation:bgmSpin 5s linear infinite; }
+    /* 배경 글로우 */
+    #bgmSheet::before { content:''; position:absolute; top:-60px; left:50%; transform:translateX(-50%); width:280px; height:180px; background:radial-gradient(ellipse,rgba(199,125,255,0.12) 0%,transparent 70%); pointer-events:none; }
+    .bgm-handle { width:32px; height:3px; background:rgba(255,255,255,0.12); border-radius:2px; margin:14px auto 0; }
+    /* Header */
+    .bgm-sheet-head { display:flex; align-items:center; justify-content:space-between; padding:14px 22px 0; }
+    .bgm-sheet-label { font-size:10px; font-weight:700; letter-spacing:.14em; color:rgba(199,125,255,0.5); text-transform:uppercase; }
+    .bgm-sheet-close { width:30px; height:30px; border:none; background:rgba(255,255,255,0.05); border-radius:50%; color:rgba(255,255,255,0.4); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+    .bgm-sheet-close:hover { background:rgba(255,255,255,0.1); color:#fff; }
+    /* Art — squircle */
+    .bgm-sheet-art-wrap { display:flex; justify-content:center; padding:22px 0 18px; }
+    #bgmSheetArt { width:168px; height:168px; border-radius:26px; background:linear-gradient(145deg,#2a0a4a 0%,#1a0533 40%,#0d0220 100%); display:flex; align-items:center; justify-content:center; box-shadow:0 12px 50px rgba(130,40,220,0.45), inset 0 1px 0 rgba(199,125,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.4); flex-shrink:0; position:relative; overflow:hidden; transition:transform 0.3s; }
+    #bgmSheetArt.spinning { animation:bgmSpin 8s linear infinite; }
+    #bgmSheetArt::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 35% 30%, rgba(199,125,255,0.18) 0%, transparent 55%); pointer-events:none; }
+    .bgm-art-note { font-size:52px; opacity:0.25; position:relative; z-index:1; filter:grayscale(1); }
     /* Info */
-    .bgm-sheet-info { text-align:center; padding:0 24px 4px; }
-    #bgmSheetTitle { font-size:17px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .bgm-sheet-info { text-align:center; padding:0 28px 2px; }
+    #bgmSheetTitle { font-size:18px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.01em; }
     /* Progress */
-    .bgm-progress-wrap { padding:16px 24px 4px; }
-    .bgm-seek { width:100%; -webkit-appearance:none; appearance:none; height:3px; border-radius:2px; background:rgba(255,255,255,0.12); outline:none; cursor:pointer; }
-    .bgm-seek::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:#c77dff; box-shadow:0 0 8px rgba(199,125,255,0.6); cursor:pointer; }
-    .bgm-seek::-moz-range-thumb { width:14px; height:14px; border-radius:50%; background:#c77dff; border:none; cursor:pointer; }
-    .bgm-times { display:flex; justify-content:space-between; margin-top:6px; font-size:10px; font-family:'JetBrains Mono',monospace; color:rgba(255,255,255,0.3); }
-    /* Controls */
-    .bgm-sheet-controls { display:flex; align-items:center; justify-content:center; gap:16px; padding:12px 24px 4px; }
-    .bgm-ctrl { border:none; background:none; color:rgba(255,255,255,0.5); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:color 0.15s, background 0.15s; padding:6px; -webkit-tap-highlight-color:transparent; }
-    .bgm-ctrl:hover, .bgm-ctrl.on { color:#c77dff; }
-    .bgm-ctrl-play { width:58px; height:58px; background:linear-gradient(135deg,#c77dff,#7b2ff7); border-radius:50%; color:#fff !important; box-shadow:0 4px 20px rgba(199,125,255,0.45); transition:transform 0.12s, box-shadow 0.15s; }
-    .bgm-ctrl-play:active { transform:scale(0.92); box-shadow:0 2px 10px rgba(199,125,255,0.3); }
-    /* Playlist in sheet */
-    .bgm-sheet-list-head { padding:16px 20px 8px; font-size:11px; font-weight:700; letter-spacing:.08em; color:rgba(255,255,255,0.25); text-transform:uppercase; border-top:1px solid rgba(255,255,255,0.06); }
-    #bgmSheetList { padding:0 12px 16px; max-height:200px; overflow-y:auto; }
+    .bgm-progress-wrap { padding:18px 26px 2px; }
+    .bgm-seek { width:100%; -webkit-appearance:none; appearance:none; height:2px; border-radius:1px; background:rgba(255,255,255,0.08); outline:none; cursor:pointer; }
+    .bgm-seek::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:12px; border-radius:50%; background:#c77dff; box-shadow:0 0 10px rgba(199,125,255,0.7); cursor:pointer; }
+    .bgm-seek::-moz-range-thumb { width:12px; height:12px; border-radius:50%; background:#c77dff; border:none; cursor:pointer; }
+    .bgm-times { display:flex; justify-content:space-between; margin-top:7px; font-size:10px; font-family:'JetBrains Mono',monospace; color:rgba(255,255,255,0.22); letter-spacing:.02em; }
+    /* Controls — single row: shuffle prev play next repeat */
+    .bgm-sheet-controls { display:flex; align-items:center; justify-content:center; gap:0; padding:14px 20px 6px; }
+    .bgm-ctrl { border:none; background:none; color:rgba(255,255,255,0.38); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:color 0.18s, transform 0.12s; padding:10px; -webkit-tap-highlight-color:transparent; flex-shrink:0; }
+    .bgm-ctrl:active { transform:scale(0.88); }
+    .bgm-ctrl:hover { color:rgba(255,255,255,0.7); }
+    .bgm-ctrl.on { color:#c77dff; }
+    .bgm-ctrl-sm { padding:8px; }
+    .bgm-ctrl-md { padding:10px; color:rgba(255,255,255,0.65); }
+    .bgm-ctrl-md:hover { color:#fff; }
+    .bgm-ctrl-play { width:62px; height:62px; background:linear-gradient(145deg,#c77dff,#8b2ff7); border-radius:50%; color:#fff !important; box-shadow:0 6px 28px rgba(199,125,255,0.5), inset 0 1px 0 rgba(255,255,255,0.25); transition:transform 0.14s, box-shadow 0.15s; padding:0; margin:0 8px; }
+    .bgm-ctrl-play:active { transform:scale(0.91); box-shadow:0 3px 14px rgba(199,125,255,0.3); }
+    /* Playlist */
+    .bgm-sheet-list-head { padding:14px 22px 6px; font-size:10px; font-weight:700; letter-spacing:.12em; color:rgba(255,255,255,0.2); text-transform:uppercase; border-top:1px solid rgba(255,255,255,0.05); }
+    #bgmSheetList { padding:0 14px 16px; max-height:190px; overflow-y:auto; }
     #bgmSheetList::-webkit-scrollbar { width:2px; }
-    #bgmSheetList::-webkit-scrollbar-thumb { background:rgba(199,125,255,0.2); }
-    .bgm-pl-item { display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:10px; cursor:pointer; transition:background 0.15s; -webkit-tap-highlight-color:transparent; }
-    .bgm-pl-item:hover { background:rgba(255,255,255,0.05); }
-    .bgm-pl-item.active { background:rgba(199,125,255,0.1); }
-    .bgm-pl-item .bgm-pl-num { font-size:10px; color:rgba(255,255,255,0.25); width:18px; text-align:center; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
+    #bgmSheetList::-webkit-scrollbar-thumb { background:rgba(199,125,255,0.18); border-radius:1px; }
+    .bgm-pl-item { display:flex; align-items:center; gap:12px; padding:9px 8px; border-radius:12px; cursor:pointer; transition:background 0.14s; -webkit-tap-highlight-color:transparent; }
+    .bgm-pl-item:active { background:rgba(255,255,255,0.04); }
+    .bgm-pl-item.active { background:rgba(199,125,255,0.08); }
+    .bgm-pl-num { font-size:10px; color:rgba(255,255,255,0.2); width:20px; text-align:center; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
     .bgm-pl-item.active .bgm-pl-num { color:#c77dff; }
-    .bgm-pl-item .bgm-pl-name { font-size:13px; color:rgba(255,255,255,0.65); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
-    .bgm-pl-item.active .bgm-pl-name { color:#e0d4ff; font-weight:600; }
+    .bgm-pl-name { font-size:13px; color:rgba(255,255,255,0.55); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+    .bgm-pl-item.active .bgm-pl-name { color:#e8d8ff; font-weight:600; }
+    .bgm-pl-wave { display:none; gap:2px; align-items:flex-end; height:14px; flex-shrink:0; }
+    .bgm-pl-item.active .bgm-pl-wave { display:flex; }
+    .bgm-pl-wave span { width:2px; border-radius:1px; background:#c77dff; animation:bgmWave 0.8s ease-in-out infinite alternate; }
+    .bgm-pl-wave span:nth-child(2) { animation-delay:.15s; }
+    .bgm-pl-wave span:nth-child(3) { animation-delay:.3s; }
+    @keyframes bgmWave { from { height:3px; } to { height:12px; } }
 
     /* Time label */
     .chat-msg-time { font-size:11px; color:#888; align-self:flex-end; margin:0 6px; white-space:nowrap; flex-shrink:0; }
@@ -15733,7 +15751,7 @@ imgObserver.observe(document.body, { childList: true, subtree: true });
     <button class="bgm-sheet-close" onclick="bgmCloseSheet()">✕</button>
   </div>
   <div class="bgm-sheet-art-wrap">
-    <div id="bgmSheetArt">♪</div>
+    <div id="bgmSheetArt"><span class="bgm-art-note">♪</span></div>
   </div>
   <div class="bgm-sheet-info">
     <div id="bgmSheetTitle">-</div>
@@ -15746,20 +15764,39 @@ imgObserver.observe(document.body, { childList: true, subtree: true });
     </div>
   </div>
   <div class="bgm-sheet-controls">
-    <button class="bgm-ctrl" id="bgmShuffleBtn" onclick="bgmToggleShuffle()" title="셔플">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+    <!-- 셔플 -->
+    <button class="bgm-ctrl bgm-ctrl-sm" id="bgmShuffleBtn" onclick="bgmToggleShuffle()" title="셔플">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19">
+        <path d="M18 3h3v3"/><path d="M3 21l18-18"/><path d="M18 21h3v-3"/><path d="M3 3l4.5 4.5"/>
+        <path d="M16.5 16.5 21 21"/>
+      </svg>
     </button>
-    <button class="bgm-ctrl" onclick="bgmPrev()" title="이전">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    <!-- 이전 -->
+    <button class="bgm-ctrl bgm-ctrl-md" onclick="bgmPrev()" title="이전">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <polygon points="19,20 9,12 19,4" fill="currentColor" stroke="none"/>
+        <line x1="5" y1="4" x2="5" y2="20"/>
+      </svg>
     </button>
-    <button class="bgm-ctrl bgm-ctrl-play" id="bgmSheetPlayBtn" onclick="bgmToggle(event)" title="재생/정지">
-      <svg id="bgmSheetIcon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>
+    <!-- 재생/정지 -->
+    <button class="bgm-ctrl bgm-ctrl-play" id="bgmSheetPlayBtn" onclick="bgmToggle(event)">
+      <svg id="bgmSheetIcon" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
     </button>
-    <button class="bgm-ctrl" onclick="bgmNext()" title="다음">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M6 18l8.5-6L6 6v12zm2.5-6 8.5 6V6z"/><path d="M16 6h2v12h-2z"/></svg>
+    <!-- 다음 -->
+    <button class="bgm-ctrl bgm-ctrl-md" onclick="bgmNext()" title="다음">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <polygon points="5,4 15,12 5,20" fill="currentColor" stroke="none"/>
+        <line x1="19" y1="4" x2="19" y2="20"/>
+      </svg>
     </button>
-    <button class="bgm-ctrl" id="bgmRepeatBtn" onclick="bgmToggleRepeat()" title="반복">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+    <!-- 반복 -->
+    <button class="bgm-ctrl bgm-ctrl-sm" id="bgmRepeatBtn" onclick="bgmToggleRepeat()" title="반복">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19">
+        <path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+        <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+      </svg>
     </button>
   </div>
   <div class="bgm-sheet-list-head">Playlist</div>
@@ -15884,7 +15921,7 @@ function _bgmUpdateTitles(title) {
 
 function bgmUpdateUI() {
   const playing = _bgmPlaying;
-  const PAUSE_SVG = '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
+  const PAUSE_SVG = '<rect x="5" y="4" width="5" height="16" rx="2"/><rect x="14" y="4" width="5" height="16" rx="2"/>';
   const PLAY_SVG  = '<path d="M8 5v14l11-7z"/>';
   // Mini
   const art = document.getElementById('bgmArt');
@@ -15904,8 +15941,9 @@ function bgmRenderList() {
   if (!list) return;
   list.innerHTML = BGM_PLAYLIST.map((t, i) => `
     <div class="bgm-pl-item${i === _bgmIdx ? ' active' : ''}" onclick="bgmPlayAt(${i})">
-      <span class="bgm-pl-num">${i === _bgmIdx && _bgmPlaying ? '▶' : String(i+1).padStart(2,'0')}</span>
+      <span class="bgm-pl-num">${String(i+1).padStart(2,'0')}</span>
       <span class="bgm-pl-name">${t.title}</span>
+      <span class="bgm-pl-wave"><span style="height:5px"></span><span style="height:9px"></span><span style="height:4px"></span></span>
     </div>`).join('');
 }
 

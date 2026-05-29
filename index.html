@@ -5266,60 +5266,8 @@ function vxCamShoot(){
 
 <!-- SCREEN: TAROT -->
 <div class="screen" id="screen-tarot">
-  <div class="tarot-page-header">
-    <div class="tarot-eyebrow">// MYSTIC · VENUX</div>
-    <div class="tarot-page-title">타로</div>
-    <div class="tarot-page-sub">DAILY CARD READING</div>
-  </div>
-
-  <!-- 카테고리 -->
-  <div class="tarot-cats">
-    <button class="tarot-cat active" data-cat="daily" onclick="setTarotCat(this)">오늘의 운세</button>
-    <button class="tarot-cat" data-cat="love" onclick="setTarotCat(this)">연애운</button>
-    <button class="tarot-cat" data-cat="work" onclick="setTarotCat(this)">직업운</button>
-    <button class="tarot-cat" data-cat="advice" onclick="setTarotCat(this)">조언</button>
-  </div>
-
-  <!-- 준비 상태 -->
-  <div class="tarot-ready-view" id="tarotReadyView">
-    <div class="tarot-deck-wrap">
-      <div class="tarot-deck-card" style="transform:rotate(-8deg) translateX(-10px)">
-        <div class="tarot-deck-card-star">✦</div>
-        <div class="tarot-deck-label">VENUX</div>
-      </div>
-      <div class="tarot-deck-card" style="transform:rotate(-3deg) translateX(-4px)">
-        <div class="tarot-deck-card-star">✦</div>
-        <div class="tarot-deck-label">VENUX</div>
-      </div>
-      <div class="tarot-deck-card">
-        <div class="tarot-deck-card-star">✦</div>
-        <div class="tarot-deck-label">VENUX</div>
-      </div>
-    </div>
-    <div class="tarot-ready-hint">집중하고 마음속으로 질문을 떠올린 뒤<br>카드를 뽑아보세요</div>
-    <button class="tarot-draw-btn" onclick="tarotDraw()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-      카드 뽑기
-    </button>
-  </div>
-
-  <!-- 스프레드 상태 (3장 face-down) -->
-  <div class="tarot-spread-view" id="tarotSpreadView" style="display:none">
-    <div class="tarot-positions">
-      <div class="tarot-pos-label">기운</div>
-      <div class="tarot-pos-label">주의</div>
-      <div class="tarot-pos-label">조언</div>
-    </div>
-    <div class="tarot-spread-row" id="tarotSpreadRow"></div>
-    <div class="tarot-spread-hint" id="tarotSpreadHint">카드를 탭해서 확인하세요 ✦</div>
-  </div>
-
-  <!-- 결과 상태 -->
-  <div class="tarot-result-view" id="tarotResultView" style="display:none">
-    <div class="tarot-result-cards" id="tarotResultCards"></div>
-    <div id="tarotResultReading"></div>
-    <button class="tarot-redraw-btn" onclick="tarotReset()">↺  다시 뽑기</button>
-  </div>
+  <!-- tarot-module.js 가 동적으로 채움 -->
+  <div id="fcContainer" style="min-height:100%;display:flex;flex-direction:column"></div>
 </div>
 
 <!-- SCREEN 5: COLLECTION / PHOTO ALBUM -->
@@ -5751,6 +5699,29 @@ function vxCamShoot(){
 
 <!-- 1:1 CHAT SCREEN -->
 <div id="chatBackdrop" onclick="closeChatRoom()"></div>
+
+<!-- ── 타로 AI 채팅 오버레이 ── -->
+<div id="tarotChatOverlay">
+  <div class="tcc-header">
+    <button class="tcc-back" onclick="_tcClose()" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <span class="tcc-title" id="tccTitle">타로 채팅</span>
+    <span class="tcc-coin-badge" id="tccCoinBadge">첫 3회 무료</span>
+  </div>
+  <div class="tcc-body" id="tccBody"></div>
+  <div class="tcc-input-bar">
+    <div class="tcc-input-wrap">
+      <textarea id="tccInput" class="tcc-input" rows="1"
+        placeholder="카드에 대해 궁금한 걸 물어봐..."
+        oninput="_tccOnInput()"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();_tcSend();}"></textarea>
+    </div>
+    <button class="tcc-send" id="tccSend" onclick="_tcSend()" disabled>
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
 
 <!-- ── 채팅 포토 오버레이 (셀카/네컷) ── -->
 <div id="chatPhotoOverlay">
@@ -16304,9 +16275,10 @@ imgObserver.observe(document.body, { childList: true, subtree: true });
   'use strict';
 
   // ── 코인 초기값 ─────────────────────────────────
-  const COIN_FREE_CHAT    = 10;
-  const COIN_FREE_SELFIE  = 1;
-  const COIN_FREE_FOURCUT = 1;
+  const COIN_FREE_CHAT       = 10;
+  const COIN_FREE_SELFIE     = 1;
+  const COIN_FREE_FOURCUT    = 1;
+  const COIN_FREE_TAROT_CHAT = 3; // 타로 AI 채팅 무료 3회/일
 
   // 코인 패키지 정의
   const COIN_PACKAGES = {
@@ -16320,7 +16292,7 @@ imgObserver.observe(document.body, { childList: true, subtree: true });
     let db;
     try { db = JSON.parse(localStorage.getItem('venux_daily_db') || '{}'); } catch { db = {}; }
     if (!db.coins) {
-      db.coins = { chat: COIN_FREE_CHAT, selfie: COIN_FREE_SELFIE, fourcut: COIN_FREE_FOURCUT };
+      db.coins = { chat: COIN_FREE_CHAT, selfie: COIN_FREE_SELFIE, fourcut: COIN_FREE_FOURCUT, tarot: COIN_FREE_TAROT_CHAT };
       try { localStorage.setItem('venux_daily_db', JSON.stringify(db)); } catch {}
     }
     return db.coins;
@@ -16392,6 +16364,7 @@ imgObserver.observe(document.body, { childList: true, subtree: true });
       chat:    { icon:'💬', title:'대화 코인이 부족해요', sub:'무료 대화 10회를 모두 사용했어요' },
       selfie:  { icon:'🤳', title:'셀카 코인이 부족해요', sub:'무료 셀카 1회를 사용했어요' },
       fourcut: { icon:'🎞️', title:'네컷 코인이 부족해요', sub:'무료 네컷 1회를 사용했어요' },
+      tarot:   { icon:'🃏', title:'타로 채팅 코인이 부족해요', sub:'오늘 무료 3회를 모두 사용했어요' },
     }[type] || { icon:'🪙', title:'코인이 부족해요', sub:'무료 횟수를 모두 사용했어요' };
 
     const el = id => document.getElementById(id);
@@ -17031,5 +17004,6 @@ function tarotReset() {
 
 function renderTarotPage() { tarotReset(); }
 </script>
+<script src="tarot-module.js"></script>
 </body>
 </html>

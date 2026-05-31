@@ -5,13 +5,13 @@
   'use strict';
 
   const MAX_SELECTION = 3;
-  const SLOT_LABELS = ['애정운', '재물운', '학업&취업운'];
+  const SLOT_LABELS = ['과거', '현재', '미래'];
 
   const CAT_SLOT_LABELS = {
-    daily:  ['과거 · 최근', '현재 에너지', '앞으로의 흐름'],
+    daily:  ['과거', '현재', '미래'],
     love:   ['현재 감정', '상대의 마음', '관계의 흐름'],
-    wealth: ['현재 재정', '기회 흐름',   '앞으로의 방향'],
-    biz:    ['현재 사업', '기회/위기',   '앞으로의 방향'],
+    wealth: ['현재', '기회', '조언'],
+    biz:    ['현황', '변수', '결과'],
   };
   const CAT_GUIDE = {
     daily:  '✨ 오늘 하루의 흐름을 카드 3장으로 살펴봐',
@@ -25,9 +25,33 @@
   const SHUFFLE_MS = 2000;
 
   const _CSS = `
+  html,
+  body,
+  #root,
+  #app,
+  .app,
+  .screen,
+  #screen-tarot,
+  #fcContainer,
+  .tp3-root,
+  .tp3-root * {
+    box-sizing: border-box;
+  }
+  html,
+  body,
+  #root,
+  #app,
+  .app,
+  #screen-tarot,
+  #fcContainer {
+    width: 100%; max-width: 100%; overflow-x: hidden;
+  }
   .tp3-root {
-    min-height: 100%; display: flex; flex-direction: column;
-    padding: 16px 14px calc(24px + env(safe-area-inset-bottom, 0px));
+    min-height: 100dvh; width: 100%; max-width: 100%;
+    display: flex; flex-direction: column;
+    overflow-x: hidden;
+    padding: 16px 0 calc(210px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
     background:
       radial-gradient(ellipse 80% 50% at 50% -10%, rgba(168,85,247,0.22), transparent 55%),
       radial-gradient(circle at 20% 80%, rgba(212,175,55,0.06), transparent 40%),
@@ -37,35 +61,41 @@
   .tp3-guide {
     text-align: center; font-size: 14px; line-height: 1.65;
     color: rgba(255,255,255,0.72); font-weight: 500;
-    margin: 8px 8px 18px; letter-spacing: -.01em;
+    margin: 8px auto 18px; padding: 0 16px; letter-spacing: -.01em;
+    max-width: 680px; box-sizing: border-box;
   }
   .tp3-slots {
-    display: flex; justify-content: center; align-items: flex-start;
-    gap: 10px; margin-bottom: 22px;
+    width: 100%; max-width: 100%; display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px; margin: 24px auto 28px; padding: 0 14px;
+    box-sizing: border-box; align-items: stretch;
+    overflow: hidden;
   }
   .tp3-slot {
+    min-width: 0 !important; width: 100%;
     display: flex; flex-direction: column; align-items: center; gap: 6px;
-    width: 156px; flex-shrink: 0;
   }
   .tp3-slot-label {
     font-size: 10px; font-weight: 800; letter-spacing: .06em;
     color: rgba(212,175,55,0.85); text-transform: none;
   }
   .tp3-slot-card {
-    width: 100%; aspect-ratio: 2 / 3;
-    border-radius: 10px; position: relative; overflow: hidden;
+    min-width: 0 !important; width: 100%; height: clamp(132px, 22dvh, 168px);
+    border-radius: 16px; position: relative; overflow: hidden;
     border: 1px dashed rgba(212,175,55,0.35);
     background: rgba(255,255,255,0.03);
     display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 8px;
   }
   .tp3-slot-card.filled {
     border-style: solid; border-color: rgba(212,175,55,0.55);
     box-shadow: 0 0 20px rgba(212,175,55,0.2);
   }
   .tp3-slot-empty {
-    font-size: 18px; font-weight: 800; letter-spacing: .03em;
-    color: rgba(212,175,55,0.85); text-align: center; padding: 8px 6px;
-    line-height: 1.3;
+    max-width: 100%;
+    font-size: clamp(13px, 3.2vw, 16px); font-weight: 800; letter-spacing: .01em;
+    color: rgba(212,175,55,0.85); text-align: center; padding: 0;
+    line-height: 1.25; white-space: normal; word-break: keep-all; overflow-wrap: break-word;
   }
   .tp3-slot-mini {
     width: 100%; height: 100%; border-radius: 11px;
@@ -92,14 +122,15 @@
     font-size: 11px; font-weight: 800; line-height: 1.25;
     text-shadow: 0 1px 10px rgba(0,0,0,0.9);
   }
-  .tp3-grid-wrap { flex: 1; min-height: 0; }
+  .tp3-grid-wrap { width: 100%; max-width: 100%; flex: 1; min-height: 0; overflow-x: hidden; }
   .tp3-grid {
     display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 4px; padding: 4px 0 16px;
-    transition: opacity .2s;
+    gap: 8px; padding: 16px 14px calc(190px + env(safe-area-inset-bottom, 0px));
+    transition: opacity .2s; box-sizing: border-box; width: 100%; max-width: 100%;
+    margin: 0 auto; overflow: visible;
   }
-  @media (min-width: 380px) { .tp3-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; } }
-  @media (min-width: 480px) { .tp3-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; } }
+  @media (max-width: 390px) { .tp3-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; padding-left: 12px; padding-right: 12px; } }
+  @media (min-width: 640px) { .tp3-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); max-width: 760px; margin: 0 auto; } }
   .tp3-grid.is-locked { pointer-events: none; opacity: .55; }
   .tp3-grid.is-shuffling .tp3-card-btn {
     animation: tp3Scatter 1.7s cubic-bezier(0.4,0,0.2,1) both;
@@ -234,6 +265,13 @@
   }
   .tp3-front-name { font-size: 9px; font-weight: 800; line-height: 1.2; color: #fff; }
   .tp3-front-kw { font-size: 7px; font-weight: 700; margin-top: 2px; opacity: .88; }
+  .tp3-grid .tp3-front-info,
+  .tp3-grid .tp3-front-num,
+  .tp3-grid .tp3-front-name,
+  .tp3-grid .tp3-front-kw,
+  .tp3-grid .tp3-back-name {
+    display: none !important;
+  }
   /* 뒷면 - 한번 더 누르면 이름 표시 */
   .tp3-back-name {
     position: absolute; bottom: 0; left: 0; right: 0; z-index: 5;
@@ -247,32 +285,40 @@
   }
   .tp3-face-back.is-peeked .tp3-back-name { opacity: 1; }
   .tp3-actions {
-    display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;
-    padding-top: 8px; position: sticky; bottom: 0;
-    background: linear-gradient(180deg, transparent, rgba(7,4,14,0.92) 28%);
+    position: fixed; left: 0; right: 0;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    z-index: 80; display: grid; grid-template-columns: 0.9fr 1.45fr; gap: 12px;
+    padding: 10px 24px 12px; box-sizing: border-box;
+    background: linear-gradient(to top, rgba(10,6,24,0.96) 0%, rgba(10,6,24,0.78) 55%, rgba(10,6,24,0) 100%);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    pointer-events: none;
   }
   .tp3-btn {
-    min-height: 48px; border-radius: 999px; border: none;
-    font-size: 14px; font-weight: 800; cursor: pointer;
+    height: 56px; border-radius: 999px; border: none;
+    font-size: 17px; font-weight: 700; cursor: pointer;
+    white-space: nowrap; pointer-events: auto;
     -webkit-tap-highlight-color: transparent;
     transition: transform .12s, opacity .15s, box-shadow .15s;
   }
   .tp3-btn:active:not(:disabled) { transform: scale(.97); }
   .tp3-btn-shuffle {
-    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78);
-    border: 1px solid rgba(212,175,55,0.28);
+    border: 1px solid rgba(204,172,77,0.55);
+    background: rgba(18,14,34,0.84);
+    color: #fff;
   }
   .tp3-btn-read {
-    background: linear-gradient(135deg, #7b2ff7, #c77dff);
-    color: #fff; box-shadow: 0 6px 24px rgba(199,125,255,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: linear-gradient(135deg, rgba(139,92,246,0.98), rgba(168,85,247,0.92));
+    color: #fff; box-shadow: 0 6px 24px rgba(120,72,180,0.28);
   }
   .tp3-btn:disabled {
-    opacity: .38; cursor: not-allowed; box-shadow: none;
-    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35);
+    opacity: .45; cursor: not-allowed; box-shadow: none;
+    color: rgba(255,255,255,0.42);
+    background: rgba(36,32,52,0.72);
     border: 1px solid rgba(255,255,255,0.08);
   }
   .tp3-btn-read:disabled {
-    background: rgba(255,255,255,0.06);
+    background: rgba(36,32,52,0.72);
   }
   .tp3-modal-overlay {
     position: fixed; inset: 0; z-index: 9000;
@@ -292,8 +338,9 @@
   /* ── 리딩 결과 플립 카드 ── */
   /* ── 결과 세로 스택 ── */
   .tp3-result-stack {
-    display: flex; flex-direction: column; gap: 40px;
-    margin: 8px 0 16px;
+    display: flex; flex-direction: column; gap: 30px;
+    margin: 8px auto 16px;
+    width: 100%; max-width: 680px;
   }
   .tp3-rstack-item {
     display: flex; flex-direction: column; align-items: center; gap: 0;
@@ -301,18 +348,22 @@
   }
   /* 카드명 헤더 */
   .tp3-rstack-header {
-    text-align: center; margin-bottom: 14px;
+    text-align: center; margin: 0 auto 14px;
+    width: 100%;
   }
   .tp3-rstack-name-ko {
-    font-size: 26px; font-weight: 900; color: #fff;
+    font-size: clamp(24px, 7vw, 34px); font-weight: 900; color: #fff;
     letter-spacing: -.02em; line-height: 1.1;
+    text-align: center;
   }
   .tp3-rstack-name-en {
     font-size: 12px; font-weight: 700; letter-spacing: .14em;
     color: rgba(255,255,255,0.42); text-transform: uppercase; margin-top: 4px;
+    text-align: center;
   }
   .tp3-rstack-slot-tag {
-    display: inline-block; margin-bottom: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px;
     padding: 3px 10px; border-radius: 999px;
     border: 1px solid rgba(212,175,55,0.40);
     background: rgba(212,175,55,0.10);
@@ -322,18 +373,19 @@
   }
   /* 카드 이미지 영역 — padding-bottom 트릭으로 2:3 비율 보장 */
   .tp3-rcard-wrap {
-    width: min(190px, 54vw);
+    width: min(72vw, calc(46dvh * 2 / 3), 360px);
+    aspect-ratio: 2 / 3;
+    max-height: 46dvh;
     position: relative;
     perspective: 700px; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    margin-bottom: 18px; flex-shrink: 0; align-self: center;
+    margin: 18px auto 24px; flex-shrink: 0; align-self: center;
   }
   .tp3-rcard-sizer {
-    /* 2:3 비율 생성기 — height: 150% of width */
-    padding-bottom: 150%; display: block; width: 100%;
+    display: none;
   }
   .tp3-rcard-inner {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    position: absolute; inset: 0;
     transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
     transition: transform 0.52s cubic-bezier(0.23,1,0.32,1);
     border-radius: 13px; will-change: transform;
@@ -348,12 +400,13 @@
   /* 해석 영역 */
   /* 운세 한줄 */
   .tp3-rstack-fortune {
-    width: 100%; font-size: 15px; line-height: 1.75;
-    color: rgba(255,255,255,0.80); margin-bottom: 16px;
+    width: 100%; max-width: 560px; font-size: 15px; line-height: 1.75;
+    color: rgba(255,255,255,0.80); margin: 0 auto 16px;
     letter-spacing: -.01em; text-align: center;
+    word-break: keep-all;
   }
   /* 카드 해석 섹션 */
-  .tp3-rstack-reading { width: 100%; text-align: center; }
+  .tp3-rstack-reading { width: 100%; max-width: 560px; margin: 0 auto; text-align: center; }
   .tp3-rstack-label {
     font-size: 16px; font-weight: 900; color: #fff;
     margin-bottom: 8px; letter-spacing: -.01em; text-align: center;
@@ -361,7 +414,7 @@
   .tp3-rstack-name { display: none; }
   .tp3-rstack-msg {
     font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.62);
-    text-align: center;
+    text-align: center; margin-left: auto; margin-right: auto; word-break: keep-all;
   }
   /* 구분선 */
   .tp3-rstack-divider {
@@ -449,7 +502,7 @@
     margin-top: 16px; border-radius: 18px;
     border: 1px solid rgba(212,175,55,0.22);
     background: rgba(255,255,255,0.04);
-    padding: 16px 14px; text-align: left;
+    padding: 16px 14px; text-align: center;
     animation: tp3FadeUp .4s ease both;
   }
   @keyframes tp3FadeUp {
@@ -461,14 +514,20 @@
     to   { opacity: 1; transform: translateX(0); }
   }
   .tp3-result-page {
+    min-height: 100dvh; width: 100%; overflow-x: hidden;
+    text-align: center;
+    padding: 24px 20px calc(120px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
     animation: tp3SlideIn .32s cubic-bezier(0.23,1,0.32,1) both;
   }
   .tp3-result-header {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 16px;
+    position: relative; display: flex; align-items: center; justify-content: center;
+    gap: 10px; margin: 0 auto 16px; width: 100%; max-width: 680px;
+    text-align: center;
   }
   .tp3-result-back {
-    background: none; border: none; padding: 0 8px 0 0;
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    background: none; border: none; padding: 8px;
     color: #fff; font-size: 22px; font-weight: 300; cursor: pointer;
     line-height: 1; flex-shrink: 0;
     -webkit-tap-highlight-color: transparent;
@@ -476,13 +535,26 @@
   .tp3-result-back:active { opacity: .6; }
   .tp3-result-title {
     font-size: 20px; font-weight: 900; color: #fff; letter-spacing: -.02em;
+    text-align: center;
   }
   .tp3-result-sub {
     font-size: 11px; color: rgba(212,175,55,0.75); margin-top: 1px;
     font-family: var(--vx-font-mono, monospace); letter-spacing: .06em;
+    text-align: center;
   }
+  .tp3-result-page h1,
+  .tp3-result-page h2,
+  .tp3-result-page h3,
+  .tp3-result-page p,
+  .tp3-result-page span,
+  .tp3-result-page button,
+  .tp3-result h3 { text-align: center; }
   .tp3-result h3 { font-size: 16px; font-weight: 900; margin-bottom: 8px; color: #f0d4ff; }
-  .tp3-result-summary { font-size: 13px; line-height: 1.75; color: rgba(255,255,255,0.72); margin-bottom: 14px; }
+  .tp3-result-summary {
+    max-width: 680px; margin: 0 auto 18px;
+    font-size: 13px; line-height: 1.75; color: rgba(255,255,255,0.72);
+    text-align: center; word-break: keep-all;
+  }
   .tp3-result-block {
     border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 12px;
   }
@@ -490,15 +562,15 @@
   .tp3-result-block-card { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 6px; }
   .tp3-result-block-msg { font-size: 12px; line-height: 1.7; color: rgba(255,255,255,0.58); }
   .tp3-result-advice {
-    margin-top: 14px; padding: 12px; border-radius: 12px;
+    max-width: 680px; margin: 14px auto 0; padding: 12px; border-radius: 12px;
     background: rgba(199,125,255,0.1); font-size: 12px; line-height: 1.65;
-    color: rgba(244,230,255,0.88);
+    color: rgba(244,230,255,0.88); text-align: center; word-break: keep-all;
   }
   .tp3-back-link {
-    display: block; width: 100%; margin-top: 12px; min-height: 44px;
+    display: block; width: min(100%, 680px); margin: 12px auto 0; min-height: 44px;
     border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);
     background: transparent; color: rgba(255,255,255,0.55);
-    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-size: 13px; font-weight: 700; cursor: pointer; text-align: center;
   }
   `;
 
@@ -544,42 +616,42 @@
   }
 
   const CARD_IMAGE_PATHS = {
-    the_fool: '/assets/tarot/major_00_the_fool_park_lyra.png',
-    the_magician: '/assets/tarot/major_01_the_magician_park_lyra.png',
-    the_high_priestess: '/assets/tarot/major_02_the_high_priestess_park_lyra.png',
-    the_empress: '/assets/tarot/major_03_the_empress_park_lyra.png',
-    the_emperor: '/assets/tarot/major_04_the_emperor_park_lyra.png',
-    the_hierophant: '/assets/tarot/major_05_the_hierophant_park_lyra.png',
-    the_lovers: '/assets/tarot/major_06_the_lovers_park_lyra.png',
-    the_chariot: '/assets/tarot/major_07_the_chariot_park_lyra.png',
-    strength: '/assets/tarot/major_08_strength_park_lyra.png',
-    the_hermit: '/assets/tarot/major_09_the_hermit_park_lyra.png',
-    wheel_of_fortune: '/assets/tarot/major_10_wheel_of_fortune_park_lyra.png',
-    justice: '/assets/tarot/major_11_justice_park_lyra.png',
-    the_hanged_man: '/assets/tarot/major_12_the_hanged_man_park_lyra.png',
-    death: '/assets/tarot/major_13_death_park_lyra.png',
-    temperance: '/assets/tarot/major_14_temperance_park_lyra.png',
-    the_devil: '/assets/tarot/major_15_the_devil_park_lyra.png',
-    the_tower: '/assets/tarot/major_16_the_tower_park_lyra.png',
-    the_star: '/assets/tarot/major_17_the_star_park_lyra.png',
-    the_moon: '/assets/tarot/major_18_the_moon_park_lyra.png',
-    the_sun: '/assets/tarot/major_19_the_sun_park_lyra.png',
-    judgement: '/assets/tarot/major_20_judgement_park_lyra.png',
-    the_world: '/assets/tarot/major_21_the_world_park_lyra.png',
+    the_fool: 'assets/tarot/major_00_the_fool_park_lyra.png',
+    the_magician: 'assets/tarot/major_01_the_magician_park_lyra.png',
+    the_high_priestess: 'assets/tarot/major_02_the_high_priestess_park_lyra.png',
+    the_empress: 'assets/tarot/major_03_the_empress_park_lyra.png',
+    the_emperor: 'assets/tarot/major_04_the_emperor_park_lyra.png',
+    the_hierophant: 'assets/tarot/major_05_the_hierophant_park_lyra.png',
+    the_lovers: 'assets/tarot/major_06_the_lovers_park_lyra.png',
+    the_chariot: 'assets/tarot/major_07_the_chariot_park_lyra.png',
+    strength: 'assets/tarot/major_08_strength_park_lyra.png',
+    the_hermit: 'assets/tarot/major_09_the_hermit_park_lyra.png',
+    wheel_of_fortune: 'assets/tarot/major_10_wheel_of_fortune_park_lyra.png',
+    justice: 'assets/tarot/major_11_justice_park_lyra.png',
+    the_hanged_man: 'assets/tarot/major_12_the_hanged_man_park_lyra.png',
+    death: 'assets/tarot/major_13_death_park_lyra.png',
+    temperance: 'assets/tarot/major_14_temperance_park_lyra.png',
+    the_devil: 'assets/tarot/major_15_the_devil_park_lyra.png',
+    the_tower: 'assets/tarot/major_16_the_tower_park_lyra.png',
+    the_star: 'assets/tarot/major_17_the_star_park_lyra.png',
+    the_moon: 'assets/tarot/major_18_the_moon_park_lyra.png',
+    the_sun: 'assets/tarot/major_19_the_sun_park_lyra.png',
+    judgement: 'assets/tarot/major_20_judgement_park_lyra.png',
+    the_world: 'assets/tarot/major_21_the_world_park_lyra.png',
   };
 
   function cardImageSrc(card) {
     if (card.imageFront && card.imageFront.includes('/')) return card.imageFront;
     if (card.imageUrl) return card.imageUrl;
-    return CARD_IMAGE_PATHS[card.id] || `/assets/tarot/${card.id}.png`;
+    return CARD_IMAGE_PATHS[card.id] || `assets/tarot/${card.id}.png`;
   }
 
   const CARD_BACK_PATHS = {
-    major: '/assets/tarot/back_park_lyra.png',
-    cups: '/assets/tarot/back_lee_luna.png',
-    swords: '/assets/tarot/back_shin_jiu.png',
-    wands: '/assets/tarot/back_choi_noa.png',
-    pentacles: '/assets/tarot/back_jung_aon.png',
+    major: 'assets/tarot/back_park_lyra.png',
+    cups: 'assets/tarot/back_lee_luna.png',
+    swords: 'assets/tarot/back_shin_jiu.png',
+    wands: 'assets/tarot/back_choi_noa.png',
+    pentacles: 'assets/tarot/back_jung_aon.png',
   };
 
   // 그리드 표시용: 5종 뒷면을 균등 배분하되 인접 카드에 같은 뒷면 오지 않게
@@ -721,12 +793,6 @@
 
   function handleShuffle() {
     if (state.isShuffling) return;
-
-    if (state.selectedCards.length > 0) {
-      showShuffleModal();
-      return;
-    }
-
     resetAndShuffle();
   }
 
@@ -766,9 +832,8 @@
   function handleSelectCard(card) {
     if (state.isShuffling) return;
 
-    // 이미 선택된 카드 재탭 → deselect (뒷면으로)
+    // 이미 선택된 카드 재탭 → deselect
     if (state.selectedCards.some(s => s.id === card.id)) {
-      state.flippedCardIds = state.flippedCardIds.filter(id => id !== card.id);
       state.selectedCards  = state.selectedCards.filter(s => s.id !== card.id);
       state.result = null;
       render();
@@ -777,9 +842,7 @@
 
     if (state.selectedCards.length >= MAX_SELECTION) return;
 
-    state.flippedCardIds  = [...state.flippedCardIds, card.id];
     state.selectedCards   = [...state.selectedCards, card];
-    state.peekedCardIds   = [...new Set([...state.peekedCardIds, card.id])];
     state.result = null;
     render();
   }
@@ -820,9 +883,7 @@
   }
 
   function gridCardHtml(card) {
-    const flipped  = isFlipped(card.id);
     const selected = isSelected(card.id);
-    const peeked   = state.peekedCardIds.includes(card.id);
     const maxed    = state.selectedCards.length >= MAX_SELECTION;
     const done     = maxed && !selected;
     const disabled = state.isShuffling || done;
@@ -830,14 +891,14 @@
     return `
       <button
         type="button"
-        class="tp3-card-btn${flipped ? ' is-flipped' : ''}${selected ? ' is-selected' : ''}${done ? ' is-done' : ''}"
+        class="tp3-card-btn${selected ? ' is-selected' : ''}${done ? ' is-done' : ''}"
         data-card-id="${card.id}"
         ${disabled ? 'disabled' : ''}
-        aria-label="${card.nameKo}"
+        aria-label="타로 카드 선택"
       >
         <div class="tp3-card-inner">
-          <div class="tp3-face tp3-face-back${peeked ? ' is-peeked' : ''}">
-            <img class="tp3-card-back-img" src="${cardBackSrc(card)}" alt="${card.nameKo} 카드 뒷면" loading="lazy" decoding="async">
+          <div class="tp3-face tp3-face-back">
+            <img class="tp3-card-back-img" src="${cardBackSrc(card)}" alt="타로 카드 뒷면" loading="lazy" decoding="async">
             <div class="tp3-back-stars"></div>
             <svg class="tp3-back-mandala" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
               <!-- 교차선 -->
@@ -886,13 +947,8 @@
           <div class="tp3-face tp3-face-front" style="background:${cardBg(card)};--tp3-card-color:${card.color}">
             <div class="tp3-front-illus">
               <div class="tp3-front-illus-glow"></div>
-              <img class="tp3-card-img" src="${cardImageSrc(card)}" alt="${card.nameKo}" onerror="this.style.display='none'">
+              <img class="tp3-card-img" src="${cardImageSrc(card)}" alt="타로 카드 앞면" onerror="this.style.display='none'">
               <div class="tp3-front-sym-lg">${symHtmlLarge(card)}</div>
-            </div>
-            <div class="tp3-front-info">
-              <div class="tp3-front-num">${card.number}</div>
-              <div class="tp3-front-name">${card.nameKo}</div>
-              <div class="tp3-front-kw" style="color:${card.color}">${card.keywords.slice(0, 2).join(' · ')}</div>
             </div>
           </div>
         </div>
@@ -952,10 +1008,10 @@
             <div class="tp3-result-sub">${names}</div>
           </div>
         </div>
-        <p class="tp3-result-summary">${r.summary}</p>
         <div class="tp3-result-stack">
           ${r.slots.map((block, i) => rcardHtml(block, i)).join('')}
         </div>
+        <p class="tp3-result-summary">${r.summary}</p>
         <div class="tp3-result-advice">${r.advice}</div>
         <button type="button" class="tp3-back-link" id="tp3BackPick2">카드 다시 고르기</button>
       </div>`;
@@ -966,8 +1022,8 @@
     if (!container) return;
 
     const ready = isReadingReady();
-    const readLabel = ready ? '오늘의 힐링타로 보기' : '카드를 3장 선택해 주세요';
-    const shuffleLabel = state.isShuffling ? '섞는 중...' : '셔플';
+    const readLabel = '카드 선택';
+    const shuffleLabel = '셔플';
 
     // ── 결과 페이지 ──
     if (state.result) {
@@ -977,6 +1033,11 @@
           ${resultHtml()}
         </div>`;
       container.scrollTop = 0;
+      const tarotScreen = document.getElementById('screen-tarot');
+      if (tarotScreen) tarotScreen.scrollTop = 0;
+      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+        window.scrollTo(0, 0);
+      }
       document.getElementById('tp3BackPick')?.addEventListener('click', handleBackToPick);
       document.getElementById('tp3BackPick2')?.addEventListener('click', handleBackToPick);
       return;
@@ -996,10 +1057,10 @@
           </div>
         </div>
         <div class="tp3-actions">
-          <button type="button" class="tp3-btn tp3-btn-shuffle" id="tp3ShuffleBtn" ${state.isShuffling ? 'disabled' : ''}>
+          <button type="button" class="tp3-btn tp3-btn-shuffle shuffle-button" id="tp3ShuffleBtn">
             ${shuffleLabel}
           </button>
-          <button type="button" class="tp3-btn tp3-btn-read" id="tp3ReadBtn" ${ready && !state.isShuffling ? '' : 'disabled'}>
+          <button type="button" class="tp3-btn tp3-btn-read card-select-button" id="tp3ReadBtn" ${ready && !state.isShuffling ? '' : 'disabled'}>
             ${readLabel}
           </button>
         </div>

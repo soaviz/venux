@@ -2216,7 +2216,14 @@
     #screen-affinity { background: var(--vx-bg) !important; }
 
     /* ══ TAROT SCREEN ══ */
-    #screen-tarot { background: var(--vx-bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    *, *::before, *::after { box-sizing: border-box; }
+    #screen-tarot {
+      width: 100%; max-width: 100%; min-height: 100dvh;
+      background: var(--vx-bg);
+      overflow-x: hidden; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     .tarot-page-header { padding: 20px 20px 6px; }
     .tarot-eyebrow { font-family: var(--vx-font-mono); font-size: 9px; letter-spacing: .18em; color: rgba(199,125,255,0.45); text-transform: uppercase; margin-bottom: 4px; }
     .tarot-page-title { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -.02em; }
@@ -5325,7 +5332,7 @@ function vxCamShoot(){
 <!-- SCREEN: TAROT -->
 <div class="screen" id="screen-tarot">
   <!-- tarot-module.js 가 동적으로 채움 -->
-  <div id="fcContainer" style="min-height:100%;display:flex;flex-direction:column"></div>
+  <div id="fcContainer" style="width:100%;max-width:100%;min-height:100dvh;display:flex;flex-direction:column;overflow-x:hidden;box-sizing:border-box"></div>
 </div>
 
 <!-- SCREEN 5: COLLECTION / PHOTO ALBUM -->
@@ -17087,7 +17094,7 @@ function tarotReset() {
 function renderTarotPage() { tarotReset(); }
 </script>
 <script src="tarot/data/majorPick3Deck.js"></script>
-<script src="tarot-pick3.js?v=healing-tarot-backs"></script>
-<script src="tarot-module.js?v=healing-tarot-backs"></script>
+<script src="tarot-pick3.js?v=tarot-images-relative-1"></script>
+<script src="tarot-module.js?v=tarot-images-relative-1"></script>
 </body>
 </html>

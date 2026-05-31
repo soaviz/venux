@@ -12,8 +12,20 @@
   // ════════════════════════════════════════════════════════
   const _CSS = `
   /* ── Fortune Cookie Screen ── */
-  #screen-tarot { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  #fcContainer { min-height: 100%; display: flex; flex-direction: column; }
+  html, body, #root, #app {
+    width: 100%; max-width: 100%; overflow-x: hidden;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  #screen-tarot {
+    width: 100%; min-height: 100dvh;
+    overflow-x: hidden; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #fcContainer {
+    width: 100%; min-height: 100dvh;
+    display: flex; flex-direction: column;
+    overflow-x: hidden; box-sizing: border-box;
+  }
 
   .fc-deck-view {
     display: flex; flex-direction: column; align-items: center;
@@ -90,30 +102,77 @@
     font-family: var(--vx-font-mono, monospace); letter-spacing: .04em;
   }
   .fc-menu-wrap {
-    width: min(100%, 340px); margin: 0 auto 18px; padding: 4px;
-    border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.035);
+    width: 100%; max-width: 100%; margin: 0 auto;
+    padding: 0; border: 0; background: transparent;
+    box-sizing: border-box; overflow: visible;
   }
-  .fc-top-menu {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
+  .fc-top-menu,
+  .fortune-tabs {
+    width: calc(100% - 32px); max-width: 720px; margin: 16px auto 28px;
+    padding: 6px;
+    border-radius: 28px; border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(22,14,42,0.72);
+    overflow: hidden;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;
+    box-sizing: border-box;
   }
-  .fc-menu-btn {
-    height: 36px; border: 0; border-radius: 14px;
+  .fc-top-menu::-webkit-scrollbar { display: none; }
+  .fc-menu-btn,
+  .fortune-tab {
+    position: relative; z-index: 1;
+    width: 100%; min-width: 0;
+    height: 44px; padding: 0 4px; border: 0; border-radius: 22px;
     background: transparent; color: rgba(255,255,255,0.36);
-    font-size: 11px; font-weight: 700; letter-spacing: -.01em;
+    font-size: 14px; font-weight: 700; letter-spacing: -.01em;
+    white-space: nowrap; text-align: center;
     cursor: pointer; transition: background .16s, color .16s;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .fc-menu-btn.active {
-    background: rgba(199,125,255,0.16);
-    color: #d8a7ff; box-shadow: inset 0 0 0 1px rgba(199,125,255,0.22);
+  .fc-menu-btn::before,
+  .fc-menu-btn::after,
+  .fortune-tab::before,
+  .fortune-tab::after { pointer-events: none; }
+  .fc-menu-btn.active,
+  .fortune-tab.active {
+    background: rgba(117,61,164,0.68);
+    color: #fff; box-shadow: inset 0 0 0 1px rgba(208,151,255,0.28);
   }
-  .fc-menu-btn.qa-open {
-    color: rgba(255,255,255,0.82);
-    background: rgba(212,175,55,0.12);
-    box-shadow: inset 0 0 0 1px rgba(212,175,55,0.22);
+  .fc-menu-btn:not(.active),
+  .fortune-tab:not(.active) {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .fc-menu-btn[data-tab="qa"],
+  .fortune-tab[data-tab="qa"] {
+    border: 0;
+    box-shadow: none;
+  }
+  .fc-menu-btn.active[data-tab="qa"],
+  .fortune-tab.active[data-tab="qa"] {
+    background: rgba(117,61,164,0.68);
+    color: #fff; box-shadow: inset 0 0 0 1px rgba(208,151,255,0.28);
   }
   .fc-menu-btn:active { transform: scale(.97); }
+  @media (max-width: 390px) {
+    .fc-top-menu,
+    .fortune-tabs {
+      width: calc(100% - 24px);
+      padding: 5px;
+      gap: 3px;
+    }
+    .fc-menu-btn,
+    .fortune-tab {
+      height: 40px;
+      font-size: 12px;
+      padding: 0 2px;
+    }
+  }
+  @media (max-width: 340px) {
+    .fc-menu-btn,
+    .fortune-tab {
+      font-size: 11px;
+    }
+  }
   .fc-menu-wrap.qa-open ~ .tp3-guide,
   .fc-menu-wrap.qa-open ~ .tp3-slots,
   .fc-menu-wrap.qa-open ~ .tp3-grid-wrap,
@@ -529,7 +588,7 @@
   @media (min-width: 769px) {
     #tarotChatOverlay {
       top: 0; bottom: 0; left: 50%; right: auto;
-      width: 480px; height: 100vh;
+      width: 480px; height: 100dvh;
       transform: translateX(-50%) translateX(480px);
       visibility: hidden;
       transition: transform 0.32s cubic-bezier(0.32,0.72,0,1), visibility 0s linear 0.32s;
@@ -1416,16 +1475,17 @@
   }
 
   function _menuHtml(active) {
-    const item = (id, label) => `
-      <button class="fc-menu-btn ${active === id ? 'active' : ''}" onclick="_fcShowView('${id}')">${label}</button>`;
+    const activeTab = _qaOpen ? 'qa' : active;
+    const item = (id, label, tabId = id) => `
+      <button class="fc-menu-btn fortune-tab ${activeTab === id ? 'active' : ''}" data-tab="${tabId}" type="button" role="tab" aria-selected="${activeTab === id ? 'true' : 'false'}" onclick="_fcShowView(event, '${id}')">${label}</button>`;
     return `<div class="fc-menu-wrap ${_qaOpen ? 'qa-open' : ''}">
-      <div class="fc-top-menu" role="tablist" aria-label="타로 메뉴">
+      <nav class="fc-top-menu fortune-tabs" role="tablist" aria-label="타로 메뉴">
         ${item('daily',  '오늘운세')}
         ${item('love',   '애정운')}
-        ${item('wealth', '재물운')}
-        ${item('biz',    '사업운')}
-        <button class="fc-menu-btn ${_qaOpen ? 'qa-open' : ''}" type="button" aria-expanded="${_qaOpen ? 'true' : 'false'}" onclick="_fcToggleQa()">Q&A</button>
-      </div>
+        ${item('wealth', '재물운', 'money')}
+        ${item('biz',    '사업운', 'career')}
+        <button class="fc-menu-btn fortune-tab ${activeTab === 'qa' ? 'active' : ''}" data-tab="qa" type="button" role="tab" aria-selected="${activeTab === 'qa' ? 'true' : 'false'}" aria-expanded="${activeTab === 'qa' ? 'true' : 'false'}" onclick="_fcToggleQa(event)">Q&A</button>
+      </nav>
       ${_qaOpen ? `<div class="fc-qa-panel" id="fcQaPanel">
         <div class="fc-qa-item">
           <div class="fc-qa-q">Q. 어떻게 사용해?</div>
@@ -1449,13 +1509,19 @@
 
   const _CAT_LABELS = { daily: '오늘운세', love: '애정운', wealth: '재물운', biz: '사업운' };
 
-  global._fcShowView = function(view) {
+  global._fcShowView = function(eventOrView, maybeView) {
+    const event = maybeView ? eventOrView : null;
+    const view = maybeView || eventOrView;
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
     _qaOpen = false; // 카테고리 전환 시 Q&A 패널 닫기
     _activeView = view || 'love';
     _renderScreen();
   };
 
-  global._fcToggleQa = function() {
+  global._fcToggleQa = function(event) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
     _qaOpen = !_qaOpen;
     _renderScreen();
   };
